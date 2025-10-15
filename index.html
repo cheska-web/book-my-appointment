@@ -1,0 +1,757 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<div style="max-width:700px;margin:auto;font-family:Roboto,sans-serif;text-align:center;">
+  <h2 style="color:#e5007e;">Find a Clinic Near You</h2>
+  <p>Enter a postcode or clinic name to discover the nearest clinic.</p>
+
+  <input id="postcodeInput" type="text" placeholder="Search by postcode or clinic name (e.g. B29 or Glow)"
+         style="padding:12px;width:100%;max-width:420px;border:1px solid #ccc;border-radius:8px;margin-bottom:20px;">
+  <div id="clinicResults"></div>
+</div>
+
+<script>
+const clinics = [
+  {
+        "name": "GSN Aesthetics",
+        "address": "1st Floor Tek & Co 32 Wellington Parade Blacken Road Sidcup DA15 9NB, DA15 9NB",
+        "postcode": "DA15 9NB",
+        "phone": "07808 523842",
+        "email": "emma.southwick@hotmail.com"
+      },
+      {
+        "name": "Absolute Bliss Skin",
+        "address": "4-6 Hare Hill Road Littleborough Lancs OL15 9AB, OL15 9AB",
+        "postcode": "OL15 9AB",
+        "phone": "07808 607027",
+        "email": "salon@absolute-bliss.co.uk"
+      },
+      {
+        "name": "Carly Pearce Aesthetics",
+        "address": "10 East Ham Road Littlehampton West Sussex BN17 7AN, BN17 7AN",
+        "postcode": "BN17 7AN",
+        "phone": "07779 575072",
+        "email": "Info@carlypearce.co.uk"
+      },
+      {
+        "name": "Fairy Fixes (CM Medical Aesthtics Ltd )",
+        "address": "6 Cecil Road Selly Park Birmingham B29 7QG, B29 7QG",
+        "postcode": "B29 7QG",
+        "phone": "07740 940684",
+        "email": "caroline_maclaren@hotmail.com"
+      },
+      {
+        "name": "Lisa Moore Therapy",
+        "address": "2 Margaret Road Colchester Essex CO1 1RZ, CO1 1RZ",
+        "postcode": "CO1 1RZ",
+        "phone": "07526 757536",
+        "email": "lisamoore20@hotmail.com"
+      },
+      {
+        "name": "Nuvo Aesthetics",
+        "address": "15 St Peters Street Bedford MK41 0LP, MK41 0LP",
+        "postcode": "MK41 0LP",
+        "phone": "01234 385718",
+        "email": "hello@nuvoaesthetics.co.uk"
+      },
+      {
+        "name": "Artful Aesthetics by RH Ltd",
+        "address": "36 Montonmill Gardens Eccles Greater Manchester M30 8BG, M30 8BG",
+        "postcode": "M30 8BG",
+        "phone": "07775 914216",
+        "email": "artfulaestheticsrh@yahoo.com"
+      },
+      {
+        "name": "Aesthetics by Karen",
+        "address": "The Aesthetics Rooms 82 Shore Street Gourock PA19 1RD, PA19 1RD",
+        "postcode": "PA19 1RD",
+        "phone": "07799 400924",
+        "email": "eaton_k@sky.com"
+      },
+      {
+        "name": "The Good Skin Guru",
+        "address": "Queen Court Cockermouth Cumbria CA13 9FF, CA13 9FF",
+        "postcode": "CA13 9FF",
+        "phone": "07754 919080",
+        "email": "hello@thegoodskinguru.co.uk"
+      },
+      {
+        "name": "Divine Aesthetics",
+        "address": "9 Cromarty Road Stamford Lincolnshire PE9 2TQ, PE9 2TQ",
+        "postcode": "PE9 2TQ",
+        "phone": "07912 524126",
+        "email": "divineaesthetics.stamford@gmail.com"
+      },
+      {
+        "name": "Verto Aesthetics & Wellbeing",
+        "address": "Stydd Gardens Stoneygate Lane Ribchester PR3 3YN, PR3 3YN",
+        "postcode": "PR3 3YN",
+        "phone": "07479 981163",
+        "email": "info@vertoaesthetics.co.uk"
+      },
+      {
+        "name": "The Zest Clinic",
+        "address": "Birdsbush Lane Wickwar Road Bristol BS37 6PA, BS37 6PA",
+        "postcode": "BS37 6PA",
+        "phone": "07987 835876",
+        "email": "thezestclinic@gmail.com"
+      },
+      {
+        "name": "Balanced Aesthetics",
+        "address": "Unit 2 Kingsyard Rope Street ST4 6DJ, ST4 6DJ",
+        "postcode": "ST4 6DJ",
+        "phone": "07703 963713",
+        "email": "wendydudley5@gmail.com"
+      },
+      {
+        "name": "Einas Aesthetic UK LTD",
+        "address": "MA Dental Care 394 Palatine Road Northenden Manchester M22 4FZ, M22 4FZ",
+        "postcode": "M22 4FZ",
+        "phone": "07467 402053",
+        "email": "einasphcpi@hotmail.com"
+      },
+      {
+        "name": "Sculpt & Cherish Aesthetics and Rejuvenation",
+        "address": "The Meiklejohn Centre Harley Street Consulting Clinics Kingswood Way Bedford MK40 4GH, MK40 4GH",
+        "postcode": "MK40 4GH",
+        "phone": "07387 778815",
+        "email": "Sculpt.cherish@gmail.com"
+      },
+      {
+        "name": "The HAUT Clinic",
+        "address": "Haut River House Wharfebank Mills Ilkley Road Otley LS21 3JP, LS21 3JP",
+        "postcode": "LS21 3JP",
+        "phone": "07526 330975",
+        "email": "Beth.hall@thehautclinic.co.uk"
+      },
+      {
+        "name": "Beauty health aesthetics",
+        "address": "149 Bannockburn Road Stirling FK7 8NN, FK7 8NN",
+        "postcode": "FK7 8NN",
+        "phone": "01786 816817",
+        "email": "Info@beautyhealthaesthetics.co.uk"
+      },
+      {
+        "name": "Quest Clinic",
+        "address": "19 Miller Road Ayr KA7 2AY, KA7 2AY",
+        "postcode": "KA7 2AY",
+        "phone": "07815 867719",
+        "email": "Info@questclinic.co.uk"
+      },
+      {
+        "name": "Manor Aesthetics",
+        "address": "Elderslie Oaksey Road Upper Minety Malmesbury Wiltshire SN16 9PY, SN16 9PY",
+        "postcode": "SN16 9PY",
+        "phone": "07427 504334",
+        "email": "Info@manoraesthetics.co.uk"
+      },
+      {
+        "name": "Novel Aesthetics",
+        "address": "75 Lever Street Manchester M1 2AP, M1 2AP",
+        "postcode": "M1 2AP",
+        "phone": "07772 826843",
+        "email": "mia.novel.aesthetics@gmail.com"
+      },
+      {
+        "name": "CSFineLineAesthetics Ltd",
+        "address": "12 Newlyn Drive Melrose Roxburghshire TD6 9RF, TD6 9RF",
+        "postcode": "TD6 9RF",
+        "phone": "07999 891484",
+        "email": "csfinelineaesthetics@gmail.com"
+      },
+      {
+        "name": "Crewe Hair and Skin Clinic Limited",
+        "address": "110 Nantwich Road Crewe Cheshire CW2 6AT, CW2 6AT",
+        "postcode": "CW2 6AT",
+        "phone": "01270 747393",
+        "email": "info@crewehairandskinclinic.uk"
+      },
+      {
+        "name": "Nu-Yu Advanced Skin Solutions",
+        "address": "79 Old Farm Avenue Sidcup Kent DA15 8AA, DA15 8AA",
+        "postcode": "DA15 8AA",
+        "phone": "07968 777150",
+        "email": "jill@nu-yu.co.uk"
+      },
+      {
+        "name": "Almas Dentistry and Aesthetics",
+        "address": "38 Chichele Road London NW2 3DD, NW2 3DD",
+        "postcode": "NW2 3DD",
+        "phone": "07871 666263",
+        "email": "Info@almasdental.co.uk"
+      },
+      {
+        "name": "CLT Natural Aesthetics",
+        "address": "12 Thompson Road Bognor Regis West Sussex PO22 7UG, PO22 7UG",
+        "postcode": "PO22 7UG",
+        "phone": "07702 602885",
+        "email": "clt.naturalaesthetics@gmail.com"
+      },
+      {
+        "name": "Essence",
+        "address": "109-111 Senhouse Street Maryport Cumbria CA15 7EZ, CA15 7EZ",
+        "postcode": "CA15 7EZ",
+        "phone": "07855 045576",
+        "email": "Hello@essencecumbria.co.uk"
+      },
+      {
+        "name": "Aesthetic Balance",
+        "address": "9 Willow Park Drive Stourbridge West Midlands DY8 2HL, DY8 2HL",
+        "postcode": "DY8 2HL",
+        "phone": "07973 654946",
+        "email": "aestheticbalance74@gmail.com"
+      },
+      {
+        "name": "Radiance Aesthetics & Skincare",
+        "address": "66a Street Lane Leeds LS8 2DQ, LS8 2DQ",
+        "postcode": "LS8 2DQ",
+        "phone": "07800 607308",
+        "email": "joanne.newbold@sky.com"
+      },
+      {
+        "name": "The Clinic",
+        "address": "10 St Martin at Palace Plain Norwich NR3 1RN, NR3 1RN",
+        "postcode": "NR3 1RN",
+        "phone": "07748 583106",
+        "email": "info@jooliagilvey.co.uk"
+      },
+      {
+        "name": "C & C Medical Aesthetics",
+        "address": "Primrose Barn Mowthorpe Lane Terrington York YO60 6QF, YO60 6QF",
+        "postcode": "YO60 6QF",
+        "phone": "07817 289727",
+        "email": "jacqui@candcmedical.co.uk"
+      },
+      {
+        "name": "Damalis Skin Clinic London",
+        "address": "The Old Town Hall Business Centre Roddick Suite SW19 8YB, SW19 8YB",
+        "postcode": "SW19 8YB",
+        "phone": "07469 420646",
+        "email": "drsteph@skincliniclondon.co.uk"
+      },
+      {
+        "name": "Chelsea Medical & Aesthetic Clinic",
+        "address": "204 Fulham Road Chelsea SW10 9PJ, SW10 9PJ",
+        "postcode": "SW10 9PJ",
+        "phone": "07563 834550",
+        "email": "hello@cmaclinic.co.uk"
+      },
+      {
+        "name": "Karen Hunter Aesthetics",
+        "address": "4 Church Street Darwen Lancashire BB3 2RE, BB3 2RE",
+        "postcode": "BB3 2RE",
+        "phone": "07539 470449",
+        "email": "info@karenhunteraesthetics.co.uk"
+      },
+      {
+        "name": "CJS Holistic Aesthetics",
+        "address": "9a Carlton Road Romford RM2 5AA, RM2 5AA",
+        "postcode": "RM2 5AA",
+        "phone": "07507 839928",
+        "email": "info@cjsholisticaesthetics.com"
+      },
+      {
+        "name": "Wellness by Dr Sophia",
+        "address": "The Oakley Surgery Luton LU4 9FJ, LU4 9FJ",
+        "postcode": "LU4 9FJ",
+        "phone": "07926 449734",
+        "email": "info@wellnessbydrsophia.com"
+      },
+      {
+        "name": "Glow Dr",
+        "address": "B28 Therapy Rooms 194 Robin Hood Lane Birmingham B28 0LG, B28 0LG",
+        "postcode": "B28 0LG",
+        "phone": "07765 084818",
+        "email": "glow.dr.2023@gmail.com"
+      },
+      {
+        "name": "Ruby Waxx",
+        "address": "70 Mellor Street Rochdale OL12 6AA, OL12 6AA",
+        "postcode": "OL12 6AA",
+        "phone": "07860 931245",
+        "email": "emma@rubywaxx.co.uk"
+      },
+      {
+        "name": "Profile by Nurse Jo",
+        "address": "205 Victoria Avenue Blackley Manchester M9 0RA, M9 0RA",
+        "postcode": "M9 0RA",
+        "phone": "07802 847857",
+        "email": "joshaw1980@icloud.com"
+      },
+      {
+        "name": "The Glow Cinic Hereford",
+        "address": "3 St Nicholas Street Hereford Herefordshire HR8 2WA, HR8 2WA",
+        "postcode": "HR8 2WA",
+        "phone": "07583 950747",
+        "email": "hello@theglowclinichereford.co.uk"
+      },
+      {
+        "name": "Harvey Medical Aesthetics",
+        "address": "11 Swan lane Norwich NR7 8FW, NR7 8FW",
+        "postcode": "NR7 8FW",
+        "phone": "07727 036070",
+        "email": "zoe@harveyaesthetics.co.uk"
+      },
+      {
+        "name": "Aesthetically Yours Norfolk",
+        "address": "22 Bracecamp Close Ormesbury Great Yarmouth Norfolk NR29 3PR, NR29 3PR",
+        "postcode": "NR29 3PR",
+        "phone": "07914 526638",
+        "email": "aestheticallyyoursnorfolk@hotmail.com"
+      },
+      {
+        "name": "NP Aesthetics Ltd",
+        "address": "Lovat Bank 37 Silver Street Newport Pagnall Buckinghamshire MK16 0EJ, MK16 0EJ",
+        "postcode": "MK16 0EJ",
+        "phone": "07971 683526",
+        "email": "kirsty@npaesthetics.co.uk"
+      },
+      {
+        "name": "Skin HD",
+        "address": "2 Railway Terrace Chorlton Manchester M21 0RQ, M21 0RQ",
+        "postcode": "M21 0RQ",
+        "phone": "0161 974 0212",
+        "email": "enquiries@skinhd.co.uk"
+      },
+      {
+        "name": "Aesthetics by LJ",
+        "address": "86 Northern Road Cosham Portsmouth Hampshire PO6 3ER, PO6 3ER",
+        "postcode": "PO6 3ER",
+        "phone": "07786 320051",
+        "email": "lorraine@aestheticsbylj.com"
+      },
+      {
+        "name": "TD Aesthetics",
+        "address": "56 Kenilworth Drive Rainham Kent ME8 9EH, ME8 9EH",
+        "postcode": "ME8 9EH",
+        "phone": "07952 442742",
+        "email": "tdaesthetics@gmail.com"
+      },
+      {
+        "name": "Mint Day Spa",
+        "address": "53-54 Church Street Twickenham TW1 3NR, TW1 3NR",
+        "postcode": "TW1 3NR",
+        "phone": "07799 474115",
+        "email": "enquiries@minthairandspa.co.uk"
+      },
+      {
+        "name": "Glow Holistics & Beauty, Skin & Aesthetics",
+        "address": "19 West Street Wath Upon Dearne S63 7QU, S63 7QU",
+        "postcode": "S63 7QU",
+        "phone": "07917 274609",
+        "email": "louise@glowholistics.co.uk"
+      },
+      {
+        "name": "Vie Aesthetics",
+        "address": "78 London Hill Rayleigh Essex SS6 7HP, SS6 7HP",
+        "postcode": "SS6 7HP",
+        "phone": "07899 673578",
+        "email": "info@vie-aesthetics.com"
+      },
+      {
+        "name": "Vie Aesthetics",
+        "address": "95 Gray's Inn Road Holborn London WC1X 8TX, WC1X 8TX",
+        "postcode": "WC1X 8TX",
+        "phone": "07899 673578",
+        "email": "info@vie-aesthetics.com"
+      },
+      {
+        "name": "Medispa S10",
+        "address": "378-380 Fulwood Road Sheffield S10 3GD, S10 3GD",
+        "postcode": "S10 3GD",
+        "phone": "0114 263 0124",
+        "email": "info@sheffieldmedispa.co.uk"
+      },
+      {
+        "name": "Skinfit face and body clinic",
+        "address": "177 Percy Road Hampton TW12 2JN, TW12 2JN",
+        "postcode": "TW12 2JN",
+        "phone": "0208 941 0516",
+        "email": "info@skinfitclinic.co.uk"
+      },
+      {
+        "name": "Vie Aesthetics",
+        "address": "78 London Hill Rayleigh Essex SS6 7HP, SS6 7HP",
+        "postcode": "SS6 7HP",
+        "phone": "07899 673578",
+        "email": "info@vie-aesthetics.com"
+      },
+      {
+        "name": "Rachel Staggs Aesthetics",
+        "address": "Everlast Gym Hartington Road Chiswick London W4 3UH, W4 3UH",
+        "postcode": "W4 3UH",
+        "phone": "0208 747 5756",
+        "email": "rachel@rachelstaggsaesthetics.co.uk"
+      },
+      {
+        "name": "Aesthetics By Mica",
+        "address": "39 Shepherds Gate Hempstead Kent ME7 3TG, ME7 3TG",
+        "postcode": "ME7 3TG",
+        "phone": "07519 611191",
+        "email": "Louijuju21@hotmail.com"
+      },
+      {
+        "name": "JM Aesthetics & Wellness Clinic",
+        "address": "38 Calico Road, Newton Mearns, Glasgow, East Renfrewshire, G77 6GA, G77 6GA",
+        "postcode": "G77 6GA",
+        "phone": "07581 430236",
+        "email": "info@jmaesthetics.co.uk"
+      },
+      {
+        "name": "Newcastle Skin Clinic",
+        "address": "Unit 15 Maingate Team Valley Gateshead NE11 0EP, NE11 0EP",
+        "postcode": "NE11 0EP",
+        "phone": "07798 902956",
+        "email": "info@newcastleskinclinic.co.uk"
+      },
+      {
+        "name": "KB Aesthetics London",
+        "address": "4 Parker House Admirals Way Canary Wharf E14 9UQ, E14 9UQ",
+        "postcode": "E14 9UQ",
+        "phone": "07863 814154",
+        "email": "skin@kbaestheticslondon.com"
+      },
+      {
+        "name": "The Peppermint Group",
+        "address": "270 Bath Street Glasgow G2 4JR, G2 4JR",
+        "postcode": "G2 4JR",
+        "phone": "0141 332 8895",
+        "email": "info@thepeppermintgroup.co.uk"
+      },
+      {
+        "name": "AP Aesthetics",
+        "address": "1 Corner Lane Webheath Redditch B97 5WP, B97 5WP",
+        "postcode": "B97 5WP",
+        "phone": "07515 758731",
+        "email": "amypearsall30@yahoo.com"
+      },
+      {
+        "name": "The Countryside Clinic",
+        "address": "17c Brixworth Road Spratton Northampton NN6 8HH, NN6 8HH",
+        "postcode": "NN6 8HH",
+        "phone": "07852 797172",
+        "email": "sharonhyg@gmail.com"
+      },
+      {
+        "name": "YA Skin &Hair Clinic",
+        "address": "1-3 Victoria Embankment Nottingham NG2 2JY, NG2 2JY",
+        "postcode": "NG2 2JY",
+        "phone": "07833 515811",
+        "email": "info@yabeautifyall.co.uk"
+      },
+      {
+        "name": "Claire Lavery Aesthetics",
+        "address": "24a Main Street Barwick in Elmet Leeds LS15 4JQ, LS15 4JQ",
+        "postcode": "LS15 4JQ",
+        "phone": "07789 276187",
+        "email": "claveryaesthetics@gmail.com"
+      },
+      {
+        "name": "Dr N Aesthetics",
+        "address": "210 Dogsthorpe Road Peterborough PE1 3PB, PE1 3PB",
+        "postcode": "PE1 3PB",
+        "phone": "07414 550096",
+        "email": "drnosh77@yahoo.com"
+      },
+      {
+        "name": "Omniere Clinic",
+        "address": "33 Cavendish Square London W1G 0PW, W1G 0PW",
+        "postcode": "W1G 0PW",
+        "phone": "07951 546433",
+        "email": "info@drvincentwong.com"
+      },
+      {
+        "name": "Dr Smeda Skin Clinic",
+        "address": "My Skin Medics 120 Cross Street Sale M33 7AW, M33 7AW",
+        "postcode": "M33 7AW",
+        "phone": "07837 359485",
+        "email": "ghada@doctors.org.uk"
+      },
+      {
+        "name": "AM Aesthetics",
+        "address": "1 Orchard Street Marylebone London W1H 6HL, W1H 6HL",
+        "postcode": "W1H 6HL",
+        "phone": "07799 146975",
+        "email": "aigburth@me.com"
+      },
+      {
+        "name": "Renee Grace Aesthetics",
+        "address": "Suite 2 300 Chiswick High Road London W4 1NP, W4 1NP",
+        "postcode": "W4 1NP",
+        "phone": "07543 177813",
+        "email": "kerrygrace26@gmail.com"
+      },
+      {
+        "name": "Aesthetics on The Square",
+        "address": "1 Challacombe Square Poundbury Dorset DT1 3SX, DT1 3SX",
+        "postcode": "DT1 3SX",
+        "phone": "07528 444511",
+        "email": "stephanieweekes@live.co.uk"
+      },
+      {
+        "name": "BV Aesthetics",
+        "address": "48 Goodby Road Birmingham B13 8NJ, B13 8NJ",
+        "postcode": "B13 8NJ",
+        "phone": "07783 703815",
+        "email": "bvaestheticsclinic@gmail.com"
+      },
+      {
+        "name": "Tranquility",
+        "address": "26 High Road South Woodford London E18 2QL, E18 2QL",
+        "postcode": "E18 2QL",
+        "phone": "0208 989 2349",
+        "email": "vickygage86@aol.co.uk"
+      },
+      {
+        "name": "Larkham House Dental Practice",
+        "address": "Plympton Plymouth PL7 4PH, PL7 4PH",
+        "postcode": "PL7 4PH",
+        "phone": "07749 964688",
+        "email": "k_gillard@hotmail.co.uk"
+      },
+      {
+        "name": "Zolu Medical Aesthetics",
+        "address": "The Old Police House Amesbury Road Shrewton Salisbury SP3 4HD, SP3 4HD",
+        "postcode": "SP3 4HD",
+        "phone": "07523 188974",
+        "email": "info@zoluaesthetics.com"
+      },
+      {
+        "name": "Opalesce Skin Clinic",
+        "address": "The Oddfellows Hall 1 Binns Street Crawshawbooth Rossendale Lancashire BB4 8AA, BB4 8AA",
+        "postcode": "BB4 8AA",
+        "phone": "07306 888157",
+        "email": "rebecca@opalesceskinclinic.co.uk"
+      },
+      {
+        "name": "Brewood Skin & Functional Health Skin Clinic",
+        "address": "Church House 7 Church Road Brewood Staffordshire ST19 9FA, ST19 9FA",
+        "postcode": "ST19 9FA",
+        "phone": "07565 002779",
+        "email": "info@brewoodskinclinic.co.uk"
+      },
+      {
+        "name": "Lucy Bean Aesthetics",
+        "address": "21a Church Street Horbury Wakefield West Yorkshire WF4 6LT, WF4 6LT",
+        "postcode": "WF4 6LT",
+        "phone": "07967 123373",
+        "email": "lucynicoll1@aol.com"
+      },
+      {
+        "name": "Enchanted Aesthetics",
+        "address": "11 Green Terrace Sunderland SR1 3PZ, SR1 3PZ",
+        "postcode": "SR1 3PZ",
+        "phone": "07730 005057",
+        "email": "info@enchantedaesthetics.co.uk"
+      },
+      {
+        "name": "Posh Clinique",
+        "address": "73 Susans Road Eastbourne BN21 3TG, BN21 3TG",
+        "postcode": "BN21 3TG",
+        "phone": "07468 437042",
+        "email": "rgn@poshclinique.com"
+      },
+      {
+        "name": "Aesthetics by Jeanie",
+        "address": "The Hair Bar 47 Fore Street Bridgwater TA6 6PZ, TA6 6PZ",
+        "postcode": "TA6 6PZ",
+        "phone": "07872 392145",
+        "email": "aestheticsbyjeanie@gmail.com"
+      },
+      {
+        "name": "Katy May Aesthetics",
+        "address": "Provide Wellbeing 900 The Crescent Colchester CO4 9YQ, CO4 9YQ",
+        "postcode": "CO4 9YQ",
+        "phone": "07825 185540",
+        "email": "katyspeller@yahoo.co.uk"
+      },
+      {
+        "name": "Jacsthetics Medical Aesthetics",
+        "address": "Alchemy Health and Wellness 11-13 St Bryde Street East Kilbride Glasgow G74 4HQ, G74 4HQ",
+        "postcode": "G74 4HQ",
+        "phone": "07734 422398",
+        "email": "jacsthetics@gmail.com"
+      },
+      {
+        "name": "Aesthetically Kind Limited",
+        "address": "Whitmoor Farm Whitmoor Lane Guildford GU4 7QB, GU4 7QB",
+        "postcode": "GU4 7QB",
+        "phone": "07481 995983",
+        "email": "hannsam1976@gmail.com"
+      },
+      {
+        "name": "Harriet Aesthetics Limited",
+        "address": "The Willows 19 Ickwell Road Upper Caldecote Biggleswade Bedfordshire SG18 9BS, SG18 9BS",
+        "postcode": "SG18 9BS",
+        "phone": "07812 751867",
+        "email": "harrietaesthetics@gmail.com"
+      },
+      {
+        "name": "Concierge Nurse UK",
+        "address": "55 Northgate Wakefied WF1 3BP, WF1 3BP",
+        "postcode": "WF1 3BP",
+        "phone": "07387 085727",
+        "email": "info@conciergenurseuk.com"
+      },
+      {
+        "name": "VB Health & Aesthetics",
+        "address": "County End Business Centre Jackson Street Springhead Oldham OL4 4TZ, OL4 4TZ",
+        "postcode": "OL4 4TZ",
+        "phone": "01457 237171",
+        "email": "vicki@vbhealth.co.uk"
+      },
+      {
+        "name": "Mount Road Dental Surgery",
+        "address": "4a Mount Road Chessington Surrey KT9 1JG, KT9 1JG",
+        "postcode": "KT9 1JG",
+        "phone": "0208 397 3344",
+        "email": "reception@mountroaddental.co.uk"
+      },
+      {
+        "name": "Laser & Aesthetic Clinic",
+        "address": "81 Woodfield Avenue Gravesend Kent DA11 7QQ, DA11 7QQ",
+        "postcode": "DA11 7QQ",
+        "phone": "01474 249 957",
+        "email": "reception@kentlaser.co.uk"
+      },
+      {
+        "name": "Renah Skin",
+        "address": "Dovecote Lane Horbury WF4 6BD, WF4 6BD",
+        "postcode": "WF4 6BD",
+        "phone": "07891 985722",
+        "email": "renahskin@outlook.com"
+      },
+      {
+        "name": "Helena Jones Permanent Make Up",
+        "address": "West Crodt Welford Road Long Marston Stratford Upon Avon CV37 8RH, CV37 8RH",
+        "postcode": "CV37 8RH",
+        "phone": "07855 947239",
+        "email": "enquiries@helenajones.co.uk"
+      },
+      {
+        "name": "Rejuvenate Clinic",
+        "address": "The Lodge 4 York PlacePerth PH2 8EP, PH2 8EP",
+        "postcode": "PH2 8EP",
+        "phone": "01738 551957",
+        "email": "info@rejuvenate-clinic.co.uk"
+      },
+      {
+        "name": "Towcester Clinic",
+        "address": "8 Sponne House Arcade Shopping Centre Towcester Northampton NN12 6BY, NN12 6BY",
+        "postcode": "NN12 6BY",
+        "phone": "07860 675132",
+        "email": "jwatson20@me.com"
+      },
+      {
+        "name": "Trudy Mills Aesthetics",
+        "address": "Pear Tree Cottage Gravelye Lane Lindfield RH16 2SJ, RH16 2SJ",
+        "postcode": "RH16 2SJ",
+        "phone": "07725 733843",
+        "email": "trudymills@trudymillsaesthetics.com"
+      },
+      {
+        "name": "PureMed Aesthetics",
+        "address": "34a High Street Winslow MK18 3HB, MK18 3HB",
+        "postcode": "MK18 3HB",
+        "phone": "07850 087025",
+        "email": "care@puremed.uk"
+      },
+      {
+        "name": "Apple Tree Aesthetics",
+        "address": "Apple Tree Pharmacy 6 Chelmer Village Square Chelmsford CM2 6FR, CM2 6FR",
+        "postcode": "CM2 6FR",
+        "phone": "07852 334045",
+        "email": "bharvi@appletreepharmacy.com"
+      },
+      {
+        "name": "Face Studio Clinic",
+        "address": "90 Hagley Road Birmingham B16 8LU, B16 8LU",
+        "postcode": "B16 8LU",
+        "phone": "07791 342225",
+        "email": "drnabila@facestudioclinic.com"
+      },
+      {
+        "name": "Inject Beauty",
+        "address": "28 Park Avenue Gillingham ME47 4AG, ME47 4AG",
+        "postcode": "ME47 4AG",
+        "phone": "07954 381885",
+        "email": "tamsinthomas@outlook.com"
+      },
+      {
+        "name": "Bourne Again Aesthetics",
+        "address": "29 Pyotts Hill Old Basing Basingtoke Hants RG24 8AP, RG24 8AP",
+        "postcode": "RG24 8AP",
+        "phone": "07880 727610",
+        "email": "info@bourneagainaesthetics.co.uk"
+      },
+      {
+        "name": "Aesthetics AKA",
+        "address": "Dermalux Skin & Body 32-33 High Street Wingham Canterbury CT13 1AB, CT13 1AB",
+        "postcode": "CT13 1AB",
+        "phone": "07368 993304",
+        "email": "aestheticsaka1@gmail.com"
+      },
+      {
+        "name": "Naked Health Medispa",
+        "address": "261-263 Coombe Lane London SW20 0RH, SW20 0RH",
+        "postcode": "SW20 0RH",
+        "phone": "07968 021045",
+        "email": "pegah@nakedhealth.co.uk"
+      },
+      {
+        "name": "Coco Beauty and Skincare",
+        "address": "41 Baker Street, Weybridge, Surrey, KT13 8AE, KT13 8AE",
+        "postcode": "KT13 8AE",
+        "phone": "07979 591089",
+        "email": "tiffanymacdonaldpmu@yahoo.com"
+      },
+      {
+        "name": "Croydon Cryo Clinic",
+        "address": "55 Chapel View South Croydon Surry CR2 7LJ, CR2 7LJ",
+        "postcode": "CR2 7LJ",
+        "phone": "07926 342433",
+        "email": "croydoncryo@aol.com"
+      }
+];
+
+document.getElementById('postcodeInput').addEventListener('input', function() {
+  const input = this.value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('clinicResults');
+  resultsDiv.innerHTML = '';
+
+  if (input.length < 2) return;
+
+  const matches = clinics.filter(c =>
+    c.postcode.toLowerCase().includes(input) ||
+    c.name.toLowerCase().includes(input)
+  );
+
+  if (matches.length === 0) {
+    resultsDiv.innerHTML = "<p style='color:#e5007e;'>No clinics found. Try another search term.</p>";
+    return;
+  }
+
+  matches.forEach((clinic, index) => {
+    const encoded = encodeURIComponent(`${clinic.name}, ${clinic.address}, ${clinic.postcode}`);
+    const card = `
+      <div style="border:1px solid #e0cba8;border-radius:10px;padding:15px;margin:10px 0;text-align:left;">
+        <h3 style="margin:0;color:#8b531a;">${clinic.name}</h3>
+        <p style="margin:5px 0;"><strong>Address:</strong> ${clinic.address}</p>
+        <p style="margin:5px 0;"><strong>Postcode:</strong> ${clinic.postcode}</p>
+        <p style="margin:5px 0;"><strong>Phone:</strong> <a href="tel:${clinic.phone}" style="color:#e5007e;">${clinic.phone}</a></p>
+        <p style="margin:5px 0;"><strong>Email:</strong> <a href="mailto:${clinic.email}" style="color:#e5007e;">${clinic.email}</a></p>
+        <button onclick="openMap('${encoded}')"
+                style="margin-top:8px;padding:8px 16px;background:#e5007e;color:#fff;border:none;border-radius:6px;cursor:pointer;">
+          📍 Open in Google Maps
+        </button>
+      </div>`;
+    resultsDiv.innerHTML += card;
+  });
+});
+
+function openMap(encodedAddress) {
+  // ✅ Opens cleanly in new tab — bypasses GHL sandboxing
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+  window.open(mapUrl, '_blank', 'noopener');
+}
+</script>
