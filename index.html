@@ -1,0 +1,327 @@
+<!-- ✅ Full Hero Section with Minimalist Custom Video Player -->
+<section id="ghl-hero-bg-full"
+  style="position:relative;background:linear-gradient(145deg,#ffffff 0%,#f9fafc 50%,#f5f7fb 100%);overflow:hidden;padding:100px 20px;text-align:center;font-family:'Poppins',sans-serif;">
+
+  <!-- Desktop dotted connectors -->
+  <svg class="connectors-desktop" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid meet"
+    style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;">
+    <defs>
+      <linearGradient id="strokeGrad" x1="0" x2="1">
+        <stop offset="0" stop-color="rgba(120,120,180,0.15)"></stop>
+        <stop offset="1" stop-color="rgba(120,120,180,0.08)"></stop>
+      </linearGradient>
+    </defs>
+    <path d="M140 195 C320 155 520 185 700 265" fill="none" stroke="url(#strokeGrad)" stroke-width="2.5"
+      stroke-linecap="round" stroke-dasharray="8 8" />
+    <path d="M160 625 C320 565 520 525 700 425" fill="none" stroke="url(#strokeGrad)" stroke-width="2.5"
+      stroke-linecap="round" stroke-dasharray="8 8" />
+    <path d="M1260 195 C1080 155 880 185 700 265" fill="none" stroke="url(#strokeGrad)" stroke-width="2.5"
+      stroke-linecap="round" stroke-dasharray="8 8" />
+    <path d="M1260 625 C1080 565 880 525 700 425" fill="none" stroke="url(#strokeGrad)" stroke-width="2.5"
+      stroke-linecap="round" stroke-dasharray="8 8" />
+  </svg>
+
+  <!-- Mobile connectors -->
+  <svg class="connectors-mobile" viewBox="0 0 400 100" preserveAspectRatio="xMidYMid meet"
+    style="display:none;position:absolute;top:180px;left:50%;transform:translateX(-50%);width:80%;height:auto;z-index:1;pointer-events:none;">
+    <path d="M20 50 C100 10 150 10 200 50 S300 90 380 50" fill="none" stroke="rgba(120,120,180,0.2)"
+      stroke-width="2.5" stroke-linecap="round" stroke-dasharray="8 8" />
+  </svg>
+
+  <!-- Mobile Icons Container -->
+  <div class="mobile-icons-container"></div>
+
+  <!-- Hero Text -->
+  <div class="hero-text" style="position:relative;z-index:2;max-width:860px;margin:0 auto;">
+    <p style="color:#e54b2c;font-weight:600;letter-spacing:2px;font-size:14px;margin-bottom:10px;">
+      ATTENTION: CLINIC OWNERS
+    </p>
+    <h1 style="font-size:42px;font-weight:700;line-height:1.3;margin-bottom:15px;color:#1a0e35;">
+      Fill Your Calendar with New Patients with
+      <span style="color:#a600ff;">Appointment Accelerator</span>
+    </h1>
+    <p style="font-size:18px;color:#403c4d;line-height:1.6;max-width:720px;margin:0 auto 30px;">
+      The all-in-one system that fills your clinic’s calendar with new patients — effortlessly. Proven ads, custom landing
+      pages, automated follow-ups, and direct calendar syncing — everything you need to grow your clinic.
+    </p>
+    <a href="#"
+      style="display:inline-block;background:#1a0e35;color:#fff;padding:14px 36px;border-radius:8px;font-weight:600;text-decoration:none;font-size:16px;box-shadow:0 8px 16px rgba(0,0,0,0.15);transition:all 0.3s ease;">
+      Sign Up Today
+    </a>
+  </div>
+
+  <!-- Floating Icons -->
+  <div class="floating-icons" style="position:absolute;inset:0;z-index:1;pointer-events:none;">
+    <div class="floating-icon facebook"><img src="https://cdn-icons-png.flaticon.com/512/5968/5968764.png" alt="Facebook"></div>
+    <div class="floating-icon instagram"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram"></div>
+    <div class="floating-icon ghl"><img src="https://storage.googleapis.com/msgsndr/HEbW6nMZhNOs5nSTZ1FQ/media/68f228c5175e597d9c6d5d91.png" alt="GoHighLevel"></div>
+    <div class="floating-icon landing"><img src="https://cdn-icons-png.flaticon.com/512/3039/3039386.png" alt="Landing Pages"></div>
+  </div>
+
+  <!-- ✅ Video with minimalist custom controls -->
+  <div class="hero-video">
+    <div class="video-container">
+      <video id="heroVideo" preload="metadata">
+        <source src="https://storage.googleapis.com/msgsndr/HEbW6nMZhNOs5nSTZ1FQ/media/68efb837fdc75654c57e040f.mp4" type="video/mp4">
+      </video>
+
+      <!-- Play overlay -->
+      <div class="play-overlay" id="playOverlay">
+        <svg width="80" height="80" viewBox="0 0 100 100">
+          <polygon points="40,30 70,50 40,70" fill="white"/>
+        </svg>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls" id="videoControls">
+        <button id="backward10">⏪</button>
+        <button id="playPause">▶</button>
+        <button id="forward10">⏩</button>
+        <button id="rewind" style="display:none;">🔁</button>
+        <div class="progress-container">
+          <input type="range" id="progress" value="0" min="0" step="0.1">
+          <span id="time">0:00 / 0:00</span>
+        </div>
+        <button id="fullscreen">⛶</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .hero-video {
+      position: relative;
+      z-index: 2;
+      margin: 80px auto 0;
+      max-width: 860px;
+      width: 92%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+      background: #000;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 16px;
+      background: #000;
+    }
+
+    /* Play overlay */
+    .play-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+
+    .play-overlay svg {
+      transition: transform 0.3s ease;
+    }
+
+    .play-overlay:hover svg {
+      transform: scale(1.1);
+    }
+
+    /* Controls bar */
+    .controls {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,0,0,0.45);
+      padding: 10px 20px;
+      border-radius: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      width: 90%;
+      justify-content: center;
+    }
+
+    .controls.show { opacity: 1; }
+
+    .controls button {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      outline: none;
+      transition: transform 0.2s ease;
+    }
+
+    .controls button:hover { transform: scale(1.1); }
+
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    #progress {
+      width: 100%;
+      appearance: none;
+      height: 3px;
+      background: #fff;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    #progress::-webkit-slider-thumb {
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    #time {
+      color: #fff;
+      font-size: 14px;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    /* Floating icons positions */
+    .floating-icon { position: absolute; width: 92px; height: 92px; background:#fff; border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,0.08); }
+    .floating-icon img { width: 56%; height: 56%; object-fit: contain; }
+    .facebook { left: 5%; top: 15%; }
+    .instagram { right: 10%; top: 12%; }
+    .ghl { left: 8%; bottom: 15%; }
+    .landing { right: 8%; bottom: 15%; }
+
+    @media (max-width:768px) {
+      .hero-headline { font-size:34px; }
+      .controls { width: 95%; }
+      .progress-container { max-width: 250px; }
+      .floating-icon { width: 60px; height: 60px; }
+
+      .connectors-desktop { display: none; }
+      .connectors-mobile { display: block; }
+
+      .floating-icons { display: none; }
+      .mobile-icons-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin-bottom: 40px;
+        position: relative;
+        z-index: 2;
+      }
+      .mobile-icons-container .floating-icon {
+        position: static;
+        order: 2;
+      }
+    }
+  </style>
+
+  <script>
+    const video = document.getElementById('heroVideo');
+    const playOverlay = document.getElementById('playOverlay');
+    const controls = document.getElementById('videoControls');
+    const playPause = document.getElementById('playPause');
+    const backward10 = document.getElementById('backward10');
+    const forward10 = document.getElementById('forward10');
+    const rewind = document.getElementById('rewind');
+    const progress = document.getElementById('progress');
+    const time = document.getElementById('time');
+    const fullscreen = document.getElementById('fullscreen');
+    const videoContainer = document.querySelector('.video-container');
+
+    let hideTimeout;
+
+    function toggleControls(show) {
+      controls.classList.toggle('show', show);
+    }
+
+    playOverlay.addEventListener('click', () => {
+      video.play();
+      playOverlay.style.display = 'none';
+      toggleControls(true);
+      hideTimeout = setTimeout(() => toggleControls(false), 2000);
+    });
+
+    video.addEventListener('click', () => {
+      const isVisible = controls.classList.contains('show');
+      toggleControls(!isVisible);
+      if (!isVisible) hideTimeout = setTimeout(() => toggleControls(false), 2000);
+    });
+
+    playPause.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playPause.textContent = '⏸';
+        hideTimeout = setTimeout(() => toggleControls(false), 2000);
+      } else {
+        video.pause();
+        playPause.textContent = '▶';
+        toggleControls(true);
+      }
+    });
+
+    backward10.addEventListener('click', () => video.currentTime -= 10);
+    forward10.addEventListener('click', () => video.currentTime += 10);
+    rewind.addEventListener('click', () => { video.currentTime = 0; video.play(); rewind.style.display = 'none'; });
+
+    video.addEventListener('timeupdate', () => {
+      progress.value = (video.currentTime / video.duration) * 100;
+      const format = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2,'0')}`;
+      time.textContent = `${format(video.currentTime)} / ${format(video.duration)}`;
+      if (video.ended) { rewind.style.display = 'inline'; toggleControls(true); }
+    });
+
+    progress.addEventListener('input', () => {
+      video.currentTime = (progress.value / 100) * video.duration;
+    });
+
+    fullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        videoContainer.requestFullscreen().catch(err => {
+          alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    function handleResize() {
+      const mobileIconsContainer = document.querySelector('.mobile-icons-container');
+      const floatingIcons = document.querySelector('.floating-icons');
+
+      if (window.innerWidth <= 768) {
+        // Move icons to mobile container
+        if (floatingIcons) {
+          Array.from(floatingIcons.children).forEach(icon => {
+            mobileIconsContainer.appendChild(icon);
+          });
+        }
+      } else {
+        // Move icons back to original container
+        if (mobileIconsContainer) {
+          Array.from(mobileIconsContainer.children).forEach(icon => {
+            floatingIcons.appendChild(icon);
+          });
+        }
+      }
+    }
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+  </script>
+</section>
