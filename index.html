@@ -1,0 +1,199 @@
+<!-- Clinic Finder (Postcodes.io + Centered for GHL) -->
+<style>
+  .clinic-finder-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    text-align: center;
+    font-family: 'Poppins', system-ui, Segoe UI, Roboto, Arial;
+  }
+  .cf-input {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 480px;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #d4af37, #f5e99f) 1;
+    background: #fff;
+    color: #000;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  .cf-results {
+    margin-top: 18px;
+    text-align: left;
+  }
+  .cf-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    background: linear-gradient(145deg, #fffaf0, #fff8e1);
+    border-radius: 12px;
+    padding: 14px;
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #f9d423, #d4af37) 1;
+    box-shadow: 0 6px 18px rgba(212, 175, 55, 0.08);
+    margin-bottom: 12px;
+  }
+  .cf-left { flex: 1; }
+  .cf-name { font-weight: 700; color: #0b1220; font-size: 16px; margin-bottom: 6px; }
+  .cf-address { color: #2b2b2b; font-size: 14px; margin-bottom: 6px; line-height: 1.25; }
+  .cf-meta { color: #444; font-size: 13px; margin-top: 6px; }
+  .cf-actions { display: flex; flex-direction: column; gap: 8px; min-width: 120px; }
+  .cf-btn { padding: 8px 10px; border-radius: 8px; border: 1px solid #d4af37; background: #fff; cursor: pointer; font-weight: 600; }
+  .cf-btn.primary { background: #e63946; color: #fff; border-color: transparent; }
+  .cf-heading { font-size: 18px; color: #000; margin: 12px 0; font-weight: 700; }
+  .cf-small { font-size: 13px; color: #666; }
+  #bookingPopup {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.55);
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 18px;
+    box-sizing: border-box;
+  }
+  #bookingInner {
+    width: 100%;
+    max-width: 720px;
+    background: linear-gradient(145deg, #fff8e7, #fff2cc);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    border: 2px solid transparent;
+    border-image: linear-gradient(90deg, #f9d423, #d4af37) 1;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+  }
+  #bookingInner h2 {
+    margin: 0 0 12px 0;
+    font-family: Poppins, sans-serif;
+    color: #000;
+    text-align: center;
+    font-size: 18px;
+  }
+  #bookingInner .close {
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 20px;
+    color: #444;
+  }
+  #cf-loading {
+    color: #444;
+    font-size: 14px;
+    margin-top: 12px;
+  }
+  @media (max-width: 640px) {
+    .cf-card { flex-direction: column; }
+    .cf-actions { flex-direction: row; justify-content: space-between; }
+  }
+</style>
+
+<div class="clinic-finder-wrap">
+  <input id="postcodeInput" class="cf-input" type="text"
+    placeholder="Enter your postcode (e.g. B29 6SL or N12 9ET)">
+  <div id="cf-loading" class="cf-small" style="display:none;">Loading clinics near you...</div>
+  <div id="clinicResults" class="cf-results"></div>
+</div>
+
+<div id="bookingPopup">
+  <div id="bookingInner">
+    <span class="close" onclick="closeBookingForm()">✖</span>
+    <h2 id="selectedClinicHeader"></h2>
+    <iframe id="bookingForm"
+      src="https://link.deliveringdemand.com/widget/form/aWk6rAzrmt2jQr1XJzTx"
+      style="width:100%;height:520px;border:none;border-radius:8px;"
+      title="Booking Form"></iframe>
+  </div>
+</div>
+
+<script src="https://link.deliveringdemand.com/js/form_embed.js"></script>
+
+<script>
+  const toRad = deg => deg * Math.PI / 180;
+  const getDistanceMiles = (lat1, lon1, lat2, lon2) => {
+    const R = 3958.8;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const clinics = [
+    { name: "Crewe Clinic", address: "110 Nantwich Road, Crewe, United Kingdom", postcode: "CW2 6AT", lat: 53.0884, lon: -2.4353 },
+    { name: "Colchester Clinic", address: "2 Margaret Road, Colchester, United Kingdom", postcode: "CO3 4EB", lat: 51.8833, lon: 0.8976 },
+    { name: "Littlehampton Clinic", address: "10 East Ham Road, Littlehampton, United Kingdom", postcode: "BN17 7AN", lat: 50.8093, lon: -0.5406 },
+    { name: "London Clinic", address: "38 Chichele Road, London, United Kingdom", postcode: "NW2 3AN", lat: 51.5586, lon: -0.2075 },
+    { name: "Manchester Clinic", address: "75 Lever Street, Manchester, United Kingdom", postcode: "M1 1FL", lat: 53.4839, lon: -2.2319 },
+    { name: "Bognor Regis Clinic", address: "12 Thompson Road, Bognor Regis, United Kingdom", postcode: "PO21 5TE", lat: 50.7836, lon: -0.6767 },
+    { name: "Ayr Clinic", address: "19 Miller Road, Ayr, United Kingdom", postcode: "KA7 2AX", lat: 55.4607, lon: -4.6335 },
+    { name: "Melrose Clinic", address: "12 Newlyn Drive, Melrose, United Kingdom", postcode: "TD6 9QL", lat: 55.5998, lon: -2.7304 },
+    { name: "Sidcup Clinic", address: "79 Old Farm Avenue, Sidcup, United Kingdom", postcode: "DA15 8AD", lat: 51.4342, lon: 0.0973 },
+    { name: "Wharfebank Mills Clinic", address: "Wharfebank Mills, Otley, United Kingdom", postcode: "LS21 3JP", lat: 53.9055, lon: -1.6898 }
+    // ... Add all 100 clinics here with lat/lon/postcode
+  ];
+
+  const input = document.getElementById('postcodeInput');
+  const results = document.getElementById('clinicResults');
+  const loading = document.getElementById('cf-loading');
+
+  input.addEventListener('change', async () => {
+    const q = input.value.trim();
+    if (!q) return;
+    loading.style.display = 'block';
+    results.innerHTML = '';
+
+    try {
+      const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (!data.result) {
+        loading.style.display = 'none';
+        results.innerHTML = '<p>Invalid postcode, please try again.</p>';
+        return;
+      }
+      const { latitude, longitude } = data.result;
+      const sorted = clinics.map(c => ({
+        ...c,
+        distance: getDistanceMiles(latitude, longitude, c.lat, c.lon)
+      })).sort((a, b) => a.distance - b.distance);
+
+      loading.style.display = 'none';
+      results.innerHTML = '';
+      sorted.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'cf-card';
+        card.innerHTML = `
+          <div class="cf-left">
+            <div class="cf-name">${c.name}</div>
+            <div class="cf-address">${c.address}</div>
+            <div class="cf-meta">Distance: ${c.distance.toFixed(1)} miles</div>
+          </div>
+          <div class="cf-actions">
+            <button class="cf-btn primary" onclick='openBookingForm(${JSON.stringify(c)})'>Book Now</button>
+          </div>`;
+        results.appendChild(card);
+      });
+    } catch (e) {
+      loading.style.display = 'none';
+      results.innerHTML = '<p>Something went wrong. Please try again.</p>';
+    }
+  });
+
+  function openBookingForm(clinic) {
+    document.getElementById('selectedClinicHeader').textContent = clinic.name;
+    document.getElementById('bookingPopup').style.display = 'flex';
+  }
+  function closeBookingForm() {
+    document.getElementById('bookingPopup').style.display = 'none';
+  }
+</script>
