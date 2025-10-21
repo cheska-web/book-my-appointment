@@ -146,10 +146,14 @@
   const input = document.getElementById('postcodeInput');
   const results = document.getElementById('clinicResults');
   const loading = document.getElementById('cf-loading');
+  let debounceTimer;
 
-  input.addEventListener('change', async () => {
+  const performSearch = async () => {
     const q = input.value.trim();
-    if (!q) return;
+    if (!q) {
+      results.innerHTML = '';
+      return;
+    };
     loading.style.display = 'block';
     results.innerHTML = '';
 
@@ -187,6 +191,11 @@
       loading.style.display = 'none';
       results.innerHTML = '<p>Something went wrong. Please try again.</p>';
     }
+  };
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(performSearch, 500); // 500ms delay
   });
 
   function openBookingForm(clinic) {
