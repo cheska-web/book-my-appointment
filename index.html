@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Grid</title>
+  <style>
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin: 50px 0;
+    }
+
+    .feature-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 25px;
+      text-align: left;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      background-color: #FFF2E5; /* Light background for the icon */
+      border-radius: 8px; /* Rounded corners */
+      display: flex; /* Using flexbox for centering */
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon svg {
+      width: 24px; /* Control the size of the SVG inside */
+      height: 24px;
+      stroke: #FF5C00;
+    }
+
+    .feature-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 15px;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="feature-grid">
+    <!-- 1 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Template icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#FF5C00" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </div>
+      <h3>Choose Your Template</h3>
+      <p>Pick from our high-performing, pre-tested ad templates. No guesswork needed to start strong.</p>
+    </div>
+
+    <!-- 2 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- System setup icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#FF5C00" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+          <path d="M19.4 15a7.5 7.5 0 0 0 .1-6l2.1-1.2-2-3.5-2.4.9a7.6 7.6 0 0 0-5.4-2.3V1h-4v2.9A7.6 7.6 0 0 0 5 5L2.6 4.1l-2 3.5L2.7 9a7.5 7.5 0 0 0 0 6l-2.1 1.2 2 3.5 2.4-.9a7.6 7.6 0 0 0 5.4 2.3V23h4v-2.9a7.6 7.6 0 0 0 5.4-2.3l2.4.9 2-3.5L19.4 15z"/>
+        </svg>
+      </div>
+      <h3>We Set Up Your System</h3>
+      <p>We integrate your ads, landing pages, automations, and CRM — all done-for-you.</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Calendar/booking icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#FF5C00" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="17" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </div>
+      <h3>Watch Your Calendar Fill</h3>
+      <p>Leads are captured, followed up automatically, and booked directly into your schedule.</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Chat/follow-up icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#FF5C00" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8c-.6 1.2-1.5 2.3-2.6 3.1A8.4 8.4 0 0 1 12 20a8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 0 1 4 12a8.4 8.4 0 0 1 8-8 8.4 8.4 0 0 1 8 8z"/>
+        </svg>
+      </div>
+      <h3>Automated Follow-Ups</h3>
+      <p>Instant texts and emails nurture leads and convert them into bookings on autopilot.</p>
+    </div>
+
+    <!-- 5 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Analytics/chart icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#FF5C00" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M3 3v18h18"/>
+          <path d="M9 17V9m4 8V5m4 12v-6"/>
+        </svg>
+      </div>
+      <h3>Performance Tracking</h3>
+      <p>Monitor campaign results in real time and see which ads drive the most appointments.</p>
+    </div>
+
+    <!-- 6 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Pencil/edit icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF5C00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </div>
+      <h3>Personalised Content</h3>
+      <p>We tailor ad messages and creatives to reflect your clinic’s unique brand and audience.</p>
+    </div>
+
+    <!-- 7 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Support icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#FF5C00" stroke-width="2.2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9 10a3 3 0 1 1 6 0c0 2-3 2-3 4m0 3h.01"/>
+        </svg>
+      </div>
+      <h3>Expert Support</h3>
+      <p>Our team is here every step — from setup to optimisation — ensuring your success.</p>
+    </div>
+
+    <!-- 8 -->
+    <div class="feature-card">
+      <div class="icon">
+        <!-- Rocket icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF5C00" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 12l-3 9 9-3 9-9-3-9-9 3z"></path>
+            <path d="M15 9l-3 3"></path>
+        </svg>
+      </div>
+      <h3>Quick Launch</h3>
+      <p>Launch your campaigns fast and start seeing results within days, not weeks.</p>
+    </div>
+  </div>
+
+</body>
+</html>
