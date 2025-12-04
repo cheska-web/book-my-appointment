@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Minimal styling for the card layout (adjust to taste) */
+        /* Using Tailwind for structure where possible, but keeping custom styles for aesthetics */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        body {
+            background-color: #f7f7f7;
+        }
+
+        .clinic-finder-wrap {
+            max-width:880px;
+            margin:18px auto;
+            font-family:Poppins,system-ui,Segoe UI,Roboto,Arial;
+            text-align:center;
+            padding: 0 16px;
+        }
+
+        .cf-input {
+            width:100%;
+            max-width:640px;
+            margin:0 auto;
+            display:block;
+            padding:14px 18px;
+            font-size:18px;
+            border-radius:12px;
+            border:2px solid transparent;
+            border-image:linear-gradient(90deg,#d4af37,#f5e99f) 1;
+            background:#fff;
+            color:#000;
+            box-sizing:border-box;
+            transition: box-shadow 0.3s ease;
+        }
+        .cf-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.5);
+        }
+
+        .cf-results { margin-top:24px; text-align:left; }
+
+        .cf-card {
+            display:flex;
+            gap:16px;
+            align-items:flex-start;
+            justify-content:space-between;
+            background:linear-gradient(145deg,#ffffff,#fffcf0);
+            border-radius:16px; /* Keep existing border-radius for rounded corners */
+            padding:20px;
+            /* Removed the border-image for sharp edges */
+            border: 1px solid #e2e8f0; /* New, softer border */
+            box-shadow:0 8px 24px rgba(0,0,0,0.05); /* Soften shadow color */
+            margin-bottom:16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cf-card:hover {
+            transform: translateY(-2px);
+            box-shadow:0 10px 30px rgba(0,0,0,0.1); /* Soften hover shadow color */
+        }
+
+        .cf-left { flex:1; }
+        .cf-name { font-weight:700; color:#1a202c; font-size:20px; margin-bottom:4px; }
+        .cf-address { color:#4a5568; font-size:15px; margin-bottom:8px; line-height:1.4; }
+        .cf-meta { color:#718096; font-size:14px; margin-top:8px; border-top: 1px dashed #e2e8f0; padding-top: 8px; }
+        .cf-actions { display:flex; flex-direction:column; gap:10px; min-width:140px; text-align: right; }
+
+        .cf-btn {
+            padding:10px 14px;
+            border-radius:10px;
+            border:1px solid #d4af37;
+            background:#fff;
+            cursor:pointer;
+            font-weight:600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        .cf-btn.primary {
+            background:#ff4d6e;
+            color:#fff;
+            border-color:transparent;
+            box-shadow: 0 4px 10px rgba(255, 77, 110, 0.4);
+        }
+        .cf-btn.primary:hover {
+            background:#e63946;
+            box-shadow: 0 6px 15px rgba(230, 57, 70, 0.6);
+        }
+
+        .cf-heading {
+            font-size:24px;
+            color:#333;
+            margin:16px 0;
+            font-weight:700;
+            border-bottom: 2px solid #f9d423;
+            padding-bottom: 8px;
+            text-align: center;
+        }
+        .cf-small { font-size:14px; color:#555; margin-bottom: 4px; }
+
+        /* Loading/Error Messages */
+        #cf-loading { color:#444; font-size:14px; margin-top:16px; font-style: italic; }
+        #clinicResults p { padding: 10px 0; }
+
+        @media (max-width:640px) {
+            .cf-card { flex-direction:column; }
+            .cf-actions { flex-direction:row; justify-content:space-between; min-width: 100%; text-align: center; }
+            .cf-btn { flex: 1; }
+        }
+
+        /* --- NEW MODAL STYLES --- */
+        #booking-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6); /* Dark semi-transparent background */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 5% from the top and centered */
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px; /* Adjust max width for the form */
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #modal-headline {
+            font-size: 22px;
+            font-weight: 700;
+            color: #ff4d6e; /* Using primary button color for emphasis */
+            margin: 0 0 15px 0;
+            text-align: center;
+        }
+        /* Make sure the iframe is responsive and has a set height */
+        #inline-aWk6rAzrmt2jQr1XJzTx {
+            height: 400px !important; /* Set a specific height for the form */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="clinic-finder-wrap">
+        <input id="postcodeInput" class="cf-input" type="text"
+                placeholder="Search by postcode (e.g. B29 or N12), outcode, city or clinic name (e.g. Glow)">
+        <div id="cf-loading" class="cf-small" style="display:none;">
+            <p>Loading clinics / geocoding… Please wait.</p>
+        </div>
+        <div id="clinicResults" class="cf-results"></div>
+    </div>
+
+    <div id="booking-modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+
+            <h2 id="modal-headline">Book an Appointment with [Clinic Name]</h2>
+
+            <div id="form-container"></div>
+        </div>
+    </div>
+    <script>
+    /* -------------------------
+        Clinics array (PRE-GEOCODED for speed & consistency)
+        ------------------------- */
+    const clinics = [
+        // The clinic the user is searching for (MK40 4GH)
+        { "name": "Sculpt & Cherish Aesthetics and Rejuvenation", "address": "The Meiklejohn Centre Harley Street Consulting Clinics Kingswood Way Bedford MK40 4GH", "postcode": "MK40 4GH", "phone": "07387 778815", "email": "Sculpt.cherish@gmail.com", "lat": 52.13884, "lon": -0.449764, "geocoded": true },
+        { "name": "Dr Meera Aesthetics", "address": "27 Prestonville Road Brighton BN1 3TL", "postcode": "BN1 3TL", "phone": "07738 014363", "email": "meera@drmeeraaesthetics.co.uk", "lat": 50.8351, "lon": -0.1557, "geocoded": true },
+        { "name": "RKLuxe Glow Medical Aesthetics", "address": "11 Tomnahurich Street Inverness IV3 5DA", "postcode": "IV3 5DA", "phone": "07590 499910", "email": "Rkluxglow@hotmail.com", "lat": 57.4729, "lon": -4.2384, "geocoded": true },
+        { "name": "CJS Holistics - Hackney", "address": "52 Cowper Road Stoke Newington N16 8PF", "postcode": "N16 8PF", "phone": "07507 839928", "email": "info@cjsholisticaesthetics.com", "lat": 51.565, "lon": -0.063, "geocoded": true },
+        { "name": "CJS Holistics - Soho", "address": "111 Charing Cross Road London WC2H 0BP", "postcode": "WC2H 0BP", "phone": "07507 839928", "email": "info@cjsholisticaesthetics.com", "lat": 51.513, "lon": -0.130, "geocoded": true },
+        { "name": "Hush Beauty", "address": "50 Huntingdon Road Wyton Cambridgeshire PE28 2AD", "postcode": "PE28 2AD", "phone": "07841 450867", "email": "michelle@hushbeautyco.co.uk", "lat": 52.33, "lon": -0.13, "geocoded": true },
+        { "name": "The TX Room", "address": "17 Booker Avenue Allerton Liverpool L18 4QY", "postcode": "L18 4QY", "phone": "07561 226431", "email": "info@thetxroom.co.uk", "lat": 53.385505, "lon": -2.907447, "geocoded": true },
+        { "name": "Michelle Ogden Aesthetics", "address": "11A Ashfield Terrace Chester Le Street Durham DH3 3PD", "postcode": "DH3 3PD", "phone": "07722 852456", "email": "mjofab@hotmail.com", "lat": 54.856980, "lon": -1.574670, "geocoded": true },
+        { "name": "The Skin Nurse Torbay", "address": "24 Winsu Avenue Paignton Devon TQ3 1QF", "postcode": "TQ3 1QF", "phone": "07949 369630", "email": "skinnursetorbay@gmail.com", "lat": 50.419077, "lon": -3.585586, "geocoded": true },
+        { "name": "Le Remedy Aesthetics", "address": "Bethan Sian 70 Castlegate Malton North Yorkshire YO17 7DZ", "postcode": "YO17 7DZ", "phone": "07985 134801", "email": "leremedyaesthetics@outlook.com", "lat": 54.133292, "lon": -0.793796, "geocoded": true },
+        { "name": "Skin 22", "address": "Firwood Rhewl Ruthin LL15 1TF", "postcode": "LL15 1TF", "phone": "01824 253022", "email": "hello@skin22.co.uk", "lat": 53.111867, "lon": -3.424317, "geocoded": true },
+        { "name": "London Professional Aesthetics", "address": "193 Whitecross Street London EC1Y 8QP", "postcode": "EC1Y 8QP", "phone": "0207 608 1947", "email": "hello@lpa.london", "lat": 51.5249, "lon": -0.0931, "geocoded": true },
+        { "name": "Elite Aesthetics and Skincare", "address": "35 The Oaks Tobermore Road Magherafelt County Londonderry BT45 5FG", "postcode": "BT45 5FG", "phone": "07740 193225", "email": "clairemcfall@icloud.com", "lat": 54.7675, "lon": -6.6068, "geocoded": true },
+
+        // Other Clinics
+        { "name": "Skin Medic", "address": "21 Church Street Coxhoe Durham", "postcode": "DH6 4DD", "phone": "", "email": "lindsay2107@hotmail.com", "lat": 54.720373, "lon": -1.50348, "geocoded": true },
+        { "name": "Verto Aesthetics & Wellbeing", "address": "Top Farm High Street Farndon Chester CH3 6PT", "postcode": "CH3 6PT", "phone": "07479 981163", "email": "info@vertoaesthetics.co.uk", "lat": 53.12351, "lon": -2.89531, "geocoded": true },
+        { "name": "Glow Dr", "address": "Stratford Road Shirley Solihull B90 3BB", "postcode": "B90 3BB", "phone": "07765 084818", "email": "glow.dr.2023@gmail.com", "lat": 52.41724, "lon": -1.79257, "geocoded": true },
+        { "name": "Adele Bowen Aesthetics by Adele", "address": "16 Calverley Lane Farsley Leeds LS28 5LB", "postcode": "LS28 5LB", "phone": "07584 066314", "email": "aestheticsbyadele@outlook.com", "lat": 53.82117, "lon": -1.65998, "geocoded": true },
+        { "name": "GSN Aesthetics", "address": "1st Floor Tek & Co 32 Wellington Parade Blacken Road Sidcup DA15 9NB", "postcode": "DA15 9NB", "phone": "07808 523842", "email": "emma.southwick@hotmail.com", "lat": 51.411646, "lon": 0.134542, "geocoded": true },
+        { "name": "Absolute Bliss Skin", "address": "4-6 Hare Hill Road Littleborough Lancs OL15 9AB", "postcode": "OL15 9AB", "phone": "07808 607027", "email": "salon@absolute-bliss.co.uk", "lat": 53.64205, "lon": -2.062025, "geocoded": true },
+        { "name": "Balanced Aesthetics", "address": "Unit 2 Kingsyard Rope Street ST4 6DJ", "postcode": "ST4 6DJ", "phone": "07703 963713", "email": "wendydudley5@gmail.com", "lat": 52.99229, "lon": -2.188433, "geocoded": true },
+        { "name": "YA Skin &Hair Clinic", "address": "1-3 Victoria Embankment Nottingham NG2 2JY", "postcode": "NG2 2JY", "phone": "07833 515811", "email": "info@yabeautifyall.co.uk", "lat": 52.946351, "lon": -1.139611, "geocoded": true },
+        { "name": "Carly Pearce Aesthetics", "address": "10 East Ham Road Littlehampton West Sussex BN17 7AN", "postcode": "BN17 7AN", "phone": "07779 575072", "email": "Info@carlypearce.co.uk", "lat": 50.809187, "lon": -0.560647, "geocoded": true },
+        { "name": "Fairy Fixes (CM Medical Aesthetics Ltd )", "address": "6 Cecil Road Selly Park Birmingham B29 7QG", "postcode": "B29 7QG", "phone": "07740 940684", "email": "caroline_maclaren@hotmail.com", "lat": 52.438407, "lon": -1.94276, "geocoded": true },
+        { "name": "Lisa Moore Therapy", "address": "2 Margaret Road Colchester Essex CO1 1RZ", "postcode": "CO1 1RZ", "phone": "07526 757536", "email": "lisamoore20@hotmail.com", "lat": 51.89735, "lon": 0.901599, "geocoded": true },
+        { "name": "Nuvo Aesthetics", "address": "15 St Peters Street Bedford MK41 0LP", "postcode": "MK41 0LP", "phone": "01234 385718", "email": "hello@nuvoaesthetics.co.uk", "lat": 52.136005, "lon": -0.47055, "geocoded": true },
+        { "name": "Artful Aesthetics by RH Ltd", "address": "36 Montonmill Gardens Eccles Greater Manchester M30 8BG", "postcode": "M30 8BG", "phone": "07775 914216", "email": "artfulaestheticsrh@yahoo.com", "lat": 53.484224, "lon": -2.338515, "geocoded": true },
+        { "name": "Medical Aesthetics By Karen", "address": "The Aesthetics Rooms Greenock 6 George Square Greenock PA15 1QP", "postcode": "PA15 1QP", "phone": "07799 400924", "email": "eaton_k@sky.com", "lat": 55.945827, "lon": -4.764511, "geocoded": true },
+        { "name": "The Good Skin Guru", "address": "Queen Court Cockermouth Cumbria CA13 9FF", "postcode": "CA13 9FF", "phone": "07754 919080", "email": "hello@thegoodskinguru.co.uk", "lat": 54.670351, "lon": -3.376269, "geocoded": true },
+        { "name": "Divine Aesthetics", "address": "9 Cromarty Road Stamford Lincolnshire PE9 2TQ", "postcode": "PE9 2TQ", "phone": "07912 524126", "email": "divineaesthetics.stamford@gmail.com", "lat": 52.651717, "lon": -0.477045, "geocoded": true },
+        { "name": "Verto Aesthetics & Wellbeing", "address": "Stydd Gardens Stoneygate Lane Ribchester PR3 3YN", "postcode": "PR3 3YN", "phone": "07479 981163", "email": "info@vertoaesthetics.co.uk", "lat": 53.840733, "lon": -2.570743, "geocoded": true },
+        { "name": "The Zest Clinic", "address": "Birdsbush Lane Wickwar Road Bristol BS37 6PA", "postcode": "BS37 6PA", "phone": "07987 835876", "email": "thezestclinic@gmail.com", "lat": 51.583321, "lon": -2.34842, "geocoded": true },
+        { "name": "Einas Aesthetic UK LTD", "address": "MA Dental Care 394 Palatine Road Northenden Manchester M22 4FZ", "postcode": "M22 4FZ", "phone": "07467 402053", "email": "einasphcpi@hotmail.com", "lat": 53.398642, "lon": -2.261947, "geocoded": true },
+        { "name": "The HAUT Clinic", "address": "Haut River House Wharfebank Mills Ilkley Road Otley LS21 3JP", "postcode": "LS21 3JP", "phone": "07526 330975", "email": "Beth.hall@thehautclinic.co.uk", "lat": 53.899017, "lon": -1.716182, "geocoded": true },
+        { "name": "Beauty health aesthetics", "address": "149 Bannockburn Road Stirling FK7 8NN", "postcode": "FK7 8NN", "phone": "01786 816817", "email": "Info@beautyhealthaesthetics.co.uk", "lat": 56.096386, "lon": -3.931835, "geocoded": true },
+        { "name": "Quest Clinic", "address": "19 Miller Road Ayr KA7 2AY", "postcode": "KA7 2AY", "phone": "07815 867719", "email": "Info@questclinic.co.uk", "lat": 55.459392, "lon": -4.630048, "geocoded": true },
+        { "name": "Manor Aesthetics", "address": "Elderslie Oaksey Road Upper Minety Malmesbury Wiltshire SN16 9PY", "postcode": "SN16 9PY", "phone": "07427 504334", "email": "Info@manoraesthetics.co.uk", "lat": 51.606709, "lon": -1.890632, "geocoded": true },
+        { "name": "Novel Aesthetics", "address": "75 Lever Street Manchester M1 2AP", "postcode": "M1 2AP", "phone": "07772 826843", "email": "mia.novel.aesthetics@gmail.com", "lat": 53.48395, "lon": -2.235946, "geocoded": true },
+        { "name": "CSFineLineAesthetics Ltd", "address": "12 Newlyn Drive Melrose Roxburghshire TD6 9RF", "postcode": "TD6 9RF", "phone": "07999 891484", "email": "csfinelineaesthetics@gmail.com", "lat": 55.596068, "lon": -2.716262, "geocoded": true },
+        { "name": "Crewe Hair and Skin Clinic Limited", "address": "110 Nantwich Road Crewe Cheshire CW2 6AT", "postcode": "CW2 6AT", "phone": "01270 747393", "email": "info@crewehairandskinclinic.uk", "lat": 53.084725, "lon": -2.433898, "geocoded": true },
+        { "name": "Nu-Yu Advanced Skin Solutions", "address": "379 Old Farm Ave, Sidcup DA15 8AA", "postcode": "DA15 8AA", "phone": "07968 777150", "email": "jill@nu-yu.co.uk", "lat": 51.419087, "lon": 0.133276, "geocoded": true },
+        { "name": "Almas Dentistry and Aesthetics", "address": "38 Chichele Road London NW2 3DD", "postcode": "NW2 3DD", "phone": "07871 666263", "email": "Info@almasdental.co.uk", "lat": 51.56476, "lon": -0.21855, "geocoded": true },
+        { "name": "CLT Natural Aesthetics", "address": "12 Thompson Road Bognor Regis West Sussex PO22 7UG", "postcode": "PO22 7UG", "phone": "07702 602885", "email": "clt.naturalaesthetics@gmail.com", "lat": 50.793744, "lon": -0.722659, "geocoded": true },
+        { "name": "Essence", "address": "109-111 Senhouse Street Maryport Cumbria CA15 7EZ", "postcode": "CA15 7EZ", "phone": "07855 045576", "email": "Hello@essencecumbria.co.uk", "lat": 54.717621, "lon": -3.499878, "geocoded": true },
+        { "name": "Aesthetic Balance", "address": "9 Willow Park Drive Stourbridge West Midlands DY8 2HL", "postcode": "DY8 2HL", "phone": "07973 654946", "email": "aestheticbalance74@gmail.com", "lat": 52.453002, "lon": -2.146665, "geocoded": true },
+        { "name": "Radiance Aesthetics & Skincare", "address": "66a Street Lane Leeds LS8 2DQ", "postcode": "LS8 2DQ", "phone": "07800 607308", "email": "joanne.newbold@sky.com", "lat": 53.83403, "lon": -1.52309, "geocoded": true },
+        { "name": "The Clinic", "address": "10 St Martin at Palace Plain Norwich NR3 1RN", "postcode": "NR3 1RN", "phone": "07748 583106", "email": "info@jooliagilvey.co.uk", "lat": 52.630043, "lon": 1.298282, "geocoded": true },
+        { "name": "C & C Medical Aesthetics", "address": "Primrose Barn Mowthorpe Lane Terrington York YO60 6QF", "postcode": "YO60 6QF", "phone": "07817 289727", "email": "jacqui@candcmedical.co.uk", "lat": 54.067341, "lon": -0.923412, "geocoded": true },
+        { "name": "Damalis Skin Clinic London", "address": "The Old Town Hall Business Centre Roddick Suite SW19 8YB", "postcode": "SW19 8YB", "phone": "07469 420646", "email": "drsteph@skincliniclondon.co.uk", "lat": 51.411634, "lon": -0.198946, "geocoded": true },
+        { "name": "Karen Hunter Aesthetics", "address": "4 Church Street Darwen Lancashire BB3 2RE", "postcode": "BB3 2RE", "phone": "07539 470449", "email": "info@karenhunteraesthetics.co.uk", "lat": 53.70997, "lon": -2.46467, "geocoded": true },
+        { "name": "CJS Holistic Aesthetics", "address": "9a Carlton Road Romford RM2 5AA", "postcode": "RM2 5AA", "phone": "07507 839928", "email": "info@cjsholisticaesthetics.com", "lat": 51.583353, "lon": 0.17557, "geocoded": true },
+        { "name": "Wellness by Dr Sophia", "address": "The Oakley Surgery Luton LU4 9FJ", "postcode": "LU4 9FJ", "phone": "07926 449734", "email": "info@wellnessbydrsophia.com", "lat": 51.898867, "lon": -0.463388, "geocoded": true },
+        { "name": "Glow Dr", "address": "B28 Therapy Rooms 194 Robin Hood Lane Birmingham B28 0LG", "postcode": "B28 0LG", "phone": "07765 084818", "email": "glow.dr.2023@gmail.com", "lat": 52.428704, "lon": -1.821959, "geocoded": true },
+        { "name": "Ruby Waxx", "address": "70 Mellor Street Rochdale OL12 6AA", "postcode": "OL12 6AA", "phone": "07860 931245", "email": "emma@rubywaxx.co.uk", "lat": 53.61955, "lon": -2.164539, "geocoded": true },
+        { "name": "Profile by Nurse Jo", "address": "205 Victoria Avenue Blackley Manchester M9 0RA", "postcode": "M9 0RA", "phone": "07802 847857", "email": "joshaw1980@icloud.com", "lat": 53.523086, "lon": -2.235655, "geocoded": true },
+        { "name": "The Glow Cinic Hereford", "address": "3 St Nicholas Street Hereford Herefordshire HR8 2WA", "postcode": "HR8 2WA", "phone": "07583 950747", "email": "hello@theglowclinichereford.co.uk", "lat": 52.062867, "lon": -2.571477, "geocoded": true },
+        { "name": "Harvey Medical Aesthetics", "address": "11 Swan lane Norwich NR7 8FW", "postcode": "NR7 8FW", "phone": "07727 036070", "email": "zoe@harveyaesthetics.co.uk", "lat": 52.613945, "lon": 1.341132, "geocoded": true },
+        { "name": "Aesthetically Yours Norfolk", "address": "22 Bracecamp Close Ormesbury Great Yarmouth Norfolk NR29 3PR", "postcode": "NR29 3PR", "phone": "07914 526638", "email": "aestheticallyyoursnorfolk@hotmail.com", "lat": 52.68426, "lon": 1.688828, "geocoded": true },
+        { "name": "NP Aesthetics Ltd", "address": "Lovat Bank 37 Silver Street Newport Pagnall Buckinghamshire MK16 0EJ", "postcode": "MK16 0EJ", "phone": "07971 683526", "email": "kirsty@npaesthetics.co.uk", "lat": 52.072216, "lon": -0.718873, "geocoded": true },
+        { "name": "Skin HD", "address": "2 Railway Terrace Chorlton Manchester M21 0RQ", "postcode": "M21 0RQ", "phone": "0161 974 0212", "email": "enquiries@skinhd.co.uk", "lat": 53.439818, "lon": -2.274332, "geocoded": true },
+        { "name": "Aesthetics by LJ", "address": "86 Northern Road Cosham Portsmouth Hampshire PO6 3ER", "postcode": "PO6 3ER", "phone": "07786 320051", "email": "lorraine@aestheticsbylj.com", "lat": 50.844788, "lon": -1.066487, "geocoded": true },
+        { "name": "TD Aesthetics", "address": "1 Century Road Rainham, ME8 0BG", "postcode": "ME8 0BG", "phone": "07952 442742", "email": "tdaesthetics@gmail.com", "lat": 51.3734, "lon": 0.5750, "geocoded": true },
+        { "name": "Mint Day Spa", "address": "53-54 Church Street Twickenham TW1 3NR", "postcode": "TW1 3NR", "phone": "0208 891 5544", "email": "enquiries@minthairandspa.co.uk", "lat": 51.448554, "lon": -0.347514, "geocoded": true, "website": "https://minthairandspa.co.uk/" },
+        { "name": "Glow Holistics & Beauty, Skin & Aesthetics", "address": "19 West Street Wath Upon Dearne S63 7QU", "postcode": "S63 7QU", "phone": "07917 274609", "email": "louise@glowholistics.co.uk", "lat": 53.504221, "lon": -1.332306, "geocoded": true },
+        { "name": "Vie Aesthetics - Rayleigh", "address": "78 London Hill Rayleigh Essex SS6 7HP", "postcode": "SS6 7HP", "phone": "07899 673578", "email": "info@vie-aesthetics.com", "lat": 51.583321, "lon": 0.627237, "geocoded": true },
+        { "name": "Vie Aesthetics - Holborn", "address": "95 Gray's Inn Road Holborn London WC1X 8TX", "postcode": "WC1X 8TX", "phone": "07899 673578", "email": "info@vie-aesthetics.com", "lat": 51.52264, "lon": -0.11477, "geocoded": true },
+        { "name": "Medispa S10", "address": "378-380 Fulwood Road Sheffield S10 3GD", "postcode": "S10 3GD", "phone": "0114 263 0124", "email": "info@sheffieldmedispa.co.uk", "lat": 53.38558, "lon": -1.50348, "geocoded": true },
+        { "name": "Skinfit face and body clinic", "address": "177 Percy Road Hampton TW12 2JN", "postcode": "TW12 2JN", "phone": "0208 941 0516", "email": "info@skinfitclinic.co.uk", "lat": 51.423985, "lon": -0.395781, "geocoded": true },
+        { "name": "Rachel Staggs Aesthetics", "address": "Everlast Gym Hartington Road Chiswick London W4 3UH", "postcode": "W4 3UH", "phone": "0203 951 4848", "email": "rachel@rachelstaggsaesthetics.co.uk", "lat": 51.488055, "lon": -0.252037, "geocoded": true },
+        { "name": "Aesthetics By Mica", "address": "39 Shepherds Gate Hempstead Kent ME7 3TG", "postcode": "ME7 3TG", "phone": "07519 611191", "email": "Louijuju21@hotmail.com", "lat": 51.354146, "lon": 0.55027, "geocoded": true },
+        { "name": "JM Aesthetics & Wellness Clinic", "address": "38 Calico Road, Newton Mearns, Glasgow, East Renfrewshire, G77 6GA", "postcode": "G77 6GA", "phone": "07581 430236", "email": "info@jmaesthetics.co.uk", "lat": 55.77335, "lon": -4.33235, "geocoded": true },
+        { "name": "Newcastle Skin Clinic", "address": "Unit 15 Maingate Team Valley Gateshead NE11 0EP", "postcode": "NE11 0EP", "phone": "07798 902956", "email": "info@newcastleskinclinic.co.uk", "lat": 54.931818, "lon": -1.60333, "geocoded": true },
+        { "name": "KB Aesthetics London", "address": "4 Parker House Admirals Way Canary Wharf E14 9UQ", "postcode": "E14 9UQ", "phone": "07863 814154", "email": "skin@kbaestheticslondon.com", "lat": 51.50293, "lon": -0.013583, "geocoded": true },
+        { "name": "The Peppermint Group", "address": "270 Bath Street Glasgow G2 4JR", "postcode": "G2 4JR", "phone": "0141 332 8895", "email": "info@thepeppermintgroup.co.uk", "lat": 55.864237, "lon": -4.269032, "geocoded": true },
+        { "name": "AP Aesthetics", "address": "1 Corner Lane Webheath Redditch B97 5WP", "postcode": "B97 5WP", "phone": "07515 758731", "email": "amypearsall30@yahoo.com", "lat": 52.31686, "lon": -1.954714, "geocoded": true },
+        { "name": "The Countryside Clinic", "address": "17c Brixworth Road Spratton Northampton NN6 8HH", "postcode": "NN6 8HH", "phone": "07852 797172", "email": "sharonhyg@gmail.com", "lat": 52.34213, "lon": -0.916892, "geocoded": true },
+        { "name": "Claire Lavery Aesthetics", "address": "24a Main Street Barwick in Elmet Leeds LS15 4JQ", "postcode": "LS15 4JQ", "phone": "07789 276187", "email": "claveryaesthetics@gmail.com", "lat": 53.818456, "lon": -1.399994, "geocoded": true },
+        { "name": "Dr N Aesthetics", "address": "210 Dogsthorpe Road Peterborough PE1 3PB", "postcode": "PE1 3PB", "phone": "07414 550096", "email": "drnosh77@yahoo.com", "lat": 52.587093, "lon": -0.245802, "geocoded": true },
+        { "name": "Omniere Clinic", "address": "33 Cavendish Square London W1G 0PW", "postcode": "W1G 0PW", "phone": "07951 546433", "email": "info@drvincentwong.com", "lat": 51.517319, "lon": -0.14658, "geocoded": true },
+        { "name": "Dr Smeda Skin Clinic", "address": "My Skin Medics 120 Cross Street Sale M33 7AW", "postcode": "M33 7AW", "phone": "07837 359485", "email": "ghada@doctors.org.uk", "lat": 53.418739, "lon": -2.318265, "geocoded": true },
+        { "name": "AM Aesthetics", "address": "1 Orchard Street Marylebone London W1H 6HL", "postcode": "W1H 6HL", "phone": "07799 146975", "email": "aigburth@me.com", "lat": 51.517448, "lon": -0.155743, "geocoded": true },
+        { "name": "Renee Grace Aesthetics", "address": "Suite 2 300 Chiswick High Road London W4 1NP", "postcode": "W4 1NP", "phone": "07543 177813", "email": "kerrygrace26@gmail.com", "lat": 51.49386, "lon": -0.24976, "geocoded": true },
+        { "name": "Aesthetics on The Square", "address": "1 Challacombe Square Poundbury Dorset DT1 3SX", "postcode": "DT1 3SX", "phone": "07528 444511", "email": "stephanieweekes@live.co.uk", "lat": 50.718337, "lon": -2.463289, "geocoded": true },
+        { "name": "BV Aesthetics", "address": "48 Goodby Road Birmingham B13 8NJ", "postcode": "B13 8NJ", "phone": "07783 703815", "email": "bvaestheticsclinic@gmail.com", "lat": 52.428704, "lon": -1.905646, "geocoded": true },
+        { "name": "Tranquility", "address": "26 High Road South Woodford London E18 2QL", "postcode": "E18 2QL", "phone": "0208 989 2349", "email": "vickygage86@aol.com", "lat": 51.597956, "lon": 0.021074, "geocoded": true },
+        { "name": "Larkham House Dental Practice", "address": "Plympton Plymouth PL7 4PH", "postcode": "PL7 4PH", "phone": "01752 343140", "email": "reception@larkhamhouse.co.uk", "lat": 50.38531, "lon": -4.018596, "geocoded": true },
+        { "name": "Zolu Medical Aesthetics", "address": "The Old Police House Amesbury Road Shrewton Salisbury SP3 4HD", "postcode": "SP3 4HD", "phone": "07523 188974", "email": "info@zoluaesthetics.com", "lat": 51.189745, "lon": -1.890632, "geocoded": true },
+        { "name": "Opalesce Skin Clinic", "address": "The Oddfellows Hall 1 Binns Street Crawshawbooth Rossendale Lancashire BB4 8AA", "postcode": "BB4 8AA", "phone": "07306 888157", "email": "rebecca@opalesceskinclinic.co.uk", "lat": 53.712616, "lon": -2.261947, "geocoded": true },
+        { "name": "Lucy Bean Aesthetics", "address": "21a Church Street Horbury Wakefield West Yorkshire WF4 6LT", "postcode": "WF4 6LT", "phone": "07967 123373", "email": "lucynicoll1@aol.com", "lat": 53.64205, "lon": -1.54719, "geocoded": true },
+        { "name": "Enchanted Aesthetics", "address": "11 Green Terrace Sunderland SR1 3PZ", "postcode": "SR1 3PZ", "phone": "07730 005057", "email": "info@enchantedaesthetics.co.uk", "lat": 54.907086, "lon": -1.378932, "geocoded": true },
+        { "name": "Posh Clinique", "address": "73 Susans Roads Eastbourne BN21 3TG", "postcode": "BN21 3TG", "phone": "07468 437042", "email": "rgn@poshclinique.com", "lat": 50.771941, "lon": 0.288219, "geocoded": true },
+        { "name": "Aesthetics by Jeanie", "address": "The Hair Bar 47 Fore Street Bridgwater TA6 6PZ", "postcode": "TA6 6PZ", "phone": "07872 392145", "email": "aestheticsbyjeanie@gmail.com", "lat": 51.127815, "lon": -3.003975, "geocoded": true },
+        { "name": "Katy May Aesthetics", "address": "Provide Wellbeing 900 The Crescent Colchester CO4 9YQ", "postcode": "CO4 9YQ", "phone": "07825 185540", "email": "katyspeller@yahoo.co.uk", "lat": 51.89735, "lon": 0.887289, "geocoded": true },
+        { "name": "Jacsthetics Medical Aesthetics", "address": "Alchemy Health and Wellness 11-13 St Bryde Street East Kilbride Glasgow G74 4HQ", "postcode": "G74 4HQ", "phone": "07734 422398", "email": "jacsthetics@gmail.com", "lat": 55.76793, "lon": -4.170668, "geocoded": true },
+        { "name": "Aesthetically Kind Limited", "address": "Whitmoor Farm Whitmoor Lane Guildford GU4 7QB", "postcode": "GU4 7QB", "phone": "07481 995983", "email": "hannsam1976@gmail.com", "lat": 51.275066, "lon": -0.528437, "geocoded": true },
+        { "name": "Harriet Aesthetics Limited", "address": "The Willows 19 Ickwell Road Upper Caldecote Biggleswade Bedfordshire SG18 9BS", "postcode": "SG18 9BS", "phone": "07812 751867", "email": "harrietaesthetics@gmail.com", "lat": 52.052822, "lon": -0.284249, "geocoded": true },
+        { "name": "Concierge Nurse UK", "address": "55 Northgate Wakefied WF1 3BP", "postcode": "WF1 3BP", "phone": "07387 085727", "email": "info@conciergenurseuk.com", "lat": 53.682662, "lon": -1.498415, "geocoded": true },
+        { "name": "VB Health & Aesthetics", "address": "County End Business Centre Jackson Street Springhead Oldham OL4 4TZ", "postcode": "OL4 4TZ", "phone": "01457 237171", "email": "contact@vbhealth.co.uk", "lat": 53.56012, "lon": -2.062025, "geocoded": true },
+        { "name": "Mount Road Dental Surgery", "address": "4a Mount Road Chessington Surrey KT9 1JG", "postcode": "KT9 1JG", "phone": "0208 397 3344", "email": "reception@mountroaddental.co.uk", "lat": 51.37897, "lon": -0.32049, "geocoded": true },
+        { "name": "Laser & Aesthetic Clinic", "address": "81 Woodfield Avenue Gravesend Kent DA11 7QQ", "postcode": "DA11 7QQ", "phone": "01474 249 957", "email": "reception@kentlaser.co.uk", "lat": 51.45037, "lon": 0.380295, "geocoded": true },
+        { "name": "Renah Skin", "address": "Dovecote Lane Horbury WF4 6BD", "postcode": "WF4 6BD", "phone": "07891 985722", "email": "renahskin@outlook.com", "lat": 53.64205, "lon": -1.57134, "geocoded": true },
+        { "name": "Helena Jones Permanent Make Up", "address": "West Croft Welford Road Long Marston Stratford Upon Avon CV37 8RH", "postcode": "CV37 8RH", "phone": "07855 947239", "email": "enquiries@helenajones.co.uk", "lat": 52.177002, "lon": -1.794474, "geocoded": true },
+        { "name": "Rejuvenate Clinic", "address": "The Lodge 4 York PlacePerth PH2 8EP", "postcode": "PH2 8EP", "phone": "01738 551957", "email": "info@rejuvenate-clinic.co.uk", "lat": 56.40113, "lon": -3.427845, "geocoded": true },
+        { "name": "Towcester Clinic", "address": "8 Sponne House Arcade Shopping Centre Towcester Northampton NN12 6BY", "postcode": "NN12 6BY", "phone": "07860 675132", "email": "jwatson20@me.com", "lat": 52.12871, "lon": -0.890632, "geocoded": true },
+        { "name": "Trudy Mills Aesthetics", "address": "Pear Tree Cottage Gravelye Lane Lindfield RH16 2SJ", "postcode": "RH16 2SJ", "phone": "07725 733843", "email": "trudymills@trudymillsaesthetics.com", "lat": 51.012574, "lon": 0.043685, "geocoded": true },
+        { "name": "PureMed Aesthetics", "address": "34a High Street Winslow MK18 3HB", "postcode": "MK18 3HB", "phone": "07850 087025", "email": "care@puremed.uk", "lat": 51.936005, "lon": -0.890632, "geocoded": true },
+        { "name": "Face Studio Clinic", "address": "90 Hagley Road Birmingham B16 8LU", "postcode": "B16 8LU", "phone": "07791 342225", "email": "drnabila@facestudioclinic.com", "lat": 52.47714, "lon": -1.93414, "geocoded": true },
+        { "name": "Inject Beauty", "address": "28 Park Avenue Gillingham ME47 4AG", "postcode": "ME47 4AG", "phone": "07954 381885", "email": "tamsinthomas@outlook.com", "lat": 51.411646, "lon": 0.53673, "geocoded": true },
+        { "name": "Bourne Again Aesthetics", "address": "29 Pyotts Hill Old Basing Basingtoke Hants RG24 8AP", "postcode": "RG24 8AP", "phone": "07880 727610", "email": "info@bourneagainaesthetics.co.uk", "lat": 51.275066, "lon": -1.031263, "geocoded": true },
+        { "name": "Aesthetics AKA", "address": "Dermalux Skin & Body 32-33 High Street Wingham Canterbury CT13 1AB", "postcode": "CT13 1AB", "phone": "07368 993304", "email": "aestheticsaka1@gmail.com", "lat": 51.275066, "lon": 1.25816, "geocoded": true },
+        { "name": "Naked Health Medispa", "address": "261-263 Coombe Lane London SW20 0RH", "postcode": "SW20 0RH", "phone": "0208 9445454", "email": "team@nakedhealth.co.uk", "lat": 51.411634, "lon": -0.21855, "geocoded": true },
+        { "name": "Tiffany MacDonald", "address": "41 Baker Street, Weybridge, Surrey, KT13 8AE", "postcode": "KT13 8AE", "phone": "07979 591089", "email": "tiffanymacdonaldpmu@yahoo.com", "lat": 51.37897, "lon": -0.463388, "geocoded": true },
+        { "name": "Croydon Cryo Clinic", "address": "55 Chapel View South Croydon Surry CR2 7LJ", "postcode": "CR2 7LJ", "phone": "07926 342433", "email": "croydoncryo@aol.com", "lat": 51.328325, "lon": -0.063135, "geocoded": true }
+    ]
+
+    /* -------------------------
+        Helpers & config
+        ------------------------- */
+    const GHL_CALENDAR_BASE_URL = 'https://wowfacial.bookyourtreatment.online/wow-fusion-calendar-page';
+    const POSTCODES_API_BASE = 'https://api.postcodes.io';
+    const resultsDiv = document.getElementById('clinicResults');
+    const inputEl = document.getElementById('postcodeInput');
+    const loadingEl = document.getElementById('cf-loading');
+
+    // NEW: Get modal elements
+    const modal = document.getElementById('booking-modal');
+    // Get the first close button found (assuming only one modal)
+    const closeBtn = document.getElementsByClassName('close-btn')[0];
+    const modalHeadline = document.getElementById('modal-headline');
+    let clinicObjects = clinics.map(c => ({
+        ...c,
+        // Normalize stored postcode for easier exact/partial matching later
+        normalizedPostcode: c.postcode.trim().toUpperCase().replace(/\s+/g,''),
+        geocoded: !!(c.lat && c.lon),
+        distanceMiles: Infinity
+    }));
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const toRad = deg => deg * Math.PI/180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+    function kmToMiles(km){ return km * 0.621371; }
+
+    async function initClinics() {
+        loadingEl.style.display = 'none';
+        console.log('Clinics initialised:', clinicObjects.filter(x=>x.geocoded).length, 'geocoded of', clinicObjects.length);
+    }
+    initClinics();
+
+    function escapeHtml(str) {
+        if (typeof str !== 'string') return '';
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    /* -------------------------
+        Booking Functions
+        ------------------------- */
+    function openBookingModal(clinic) {
+        const clinicName = clinic.name;
+        modalHeadline.textContent = `Book an Appointment with ${clinicName}`;
+
+        // 1. Get the container and clear it
+        const formContainer = document.getElementById('form-container');
+        formContainer.innerHTML = ''; // Clear previous form
+
+        // 2. Construct the new URL with the 'clinic' parameter
+        const formBaseUrl = 'https://link.deliveringdemand.com/widget/form/aWk6rAzrmt2jQr1XJzTx';
+        const params = new URLSearchParams();
+        params.append('clinic', clinicName);
+        const newIframeSrc = `${formBaseUrl}?${params.toString()}`;
+
+        // 3. Create the new iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = newIframeSrc;
+        iframe.style.width = '100%';
+        iframe.style.height = '400px';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '10px';
+        iframe.id = 'inline-aWk6rAzrmt2jQr1XJzTx';
+        iframe.title = 'WOW Fusion';
+
+        // 4. Create the new script tag
+        const script = document.createElement('script');
+        script.src = 'https://link.deliveringdemand.com/js/form_embed.js';
+
+        // 5. Append the new elements to the container
+        formContainer.appendChild(iframe);
+        formContainer.appendChild(script);
+
+        // 6. Display the modal
+        modal.style.display = 'block';
+    }
+
+    function closeBookingModal() {
+        modal.style.display = 'none';
+        // Also clear the form container to stop any scripts and remove content
+        document.getElementById('form-container').innerHTML = '';
+    }
+
+    // Set up listeners to close the modal (must be inside the script block)
+    if (closeBtn) closeBtn.onclick = closeBookingModal;
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            closeBookingModal();
+        }
+    }
+
+    // Renamed old 'openBookingCalendar' to '_openBookingCalendar'
+    // to preserve it if it was used elsewhere, but we now use the modal.
+    function _openBookingCalendar(clinic) {
+        // Since we are passing an object, we need to ensure special characters are escaped
+        const clinicString = JSON.stringify(clinic);
+
+        // Deserialize the clinic object for use
+        const c = JSON.parse(clinicString);
+
+        // Construct the calendar URL with the clinic name passed in query param
+        const calendarUrl = `${GHL_CALENDAR_BASE_URL}?_clientEmail=${encodeURIComponent(c.email)}`
+                            + `&_clientName=${encodeURIComponent(c.name)}`
+                            + `&clinic=${encodeURIComponent(c.name)}`
+                            + `&_source=ClinicFinder`;
+
+        // Open the calendar in a new tab
+        window.open(calendarUrl, '_blank');
+    }
+
+    /* -------------------------
+        UI Generation & Search Logic (MODIFIED BUTTON)
+        ------------------------- */
+    function generateClinicCard(clinic) {
+        // If distance is 0.0, display it exactly, otherwise format to one decimal place or default text
+        const distanceText = clinic.distanceMiles !== Infinity ? `${clinic.distanceMiles.toFixed(1)} miles away` : 
+                                'Check Availability';
+
+        // ⭐️ NEW CODE: Create the website link HTML ⭐️
+        const websiteLink = clinic.website ?
+            `<a href="${escapeHtml(clinic.website)}" target="_blank" style="color:#ff4d6e; text-decoration:underline;">Visit Website</a>` :
+            '';
+
+        // ⭐️ NEW CODE: Combine meta data with a separator ⭐️
+        // Check if there is an email, phone, or website, and join them with a separator '|'
+        const metaElements = [
+            clinic.phone ? escapeHtml(clinic.phone) : null,
+            clinic.email ? escapeHtml(clinic.email) : null,
+            websiteLink
+        ].filter(Boolean); // Filters out any null/empty elements
+
+        const metaText = metaElements.join(' | ');
+
+
+        // NOTE: The onclick event is changed to call openBookingModal()
+        return `
+            <div class="cf-card">
+            <div class="cf-left">
+                <div class="cf-name">${escapeHtml(clinic.name)}</div>
+                <div class="cf-address">${escapeHtml(clinic.address)}</div>
+                <div class="cf-meta">${metaText}</div>
+            </div>
+            <div class="cf-actions">
+                <div class="cf-small">${distanceText}</div>
+                <button class="cf-btn primary" onclick='openBookingModal(${JSON.stringify(clinic)})'>
+                Book Now
+                </button>
+            </div>
+            </div>
+        `;
+    }
+
+    function renderResults(clinics) {
+        resultsDiv.innerHTML = '';
+        if (clinics.length === 0) {
+            resultsDiv.innerHTML = '<p class="cf-heading">No clinics found nearby or matching your search.</p>';
+            return;
+        }
+
+        // Sort by distance (Infinity distances will be last)
+        clinics.sort((a,b) => {
+            if (a.distanceMiles === Infinity && b.distanceMiles === Infinity) return 0;
+            if (a.distanceMiles === Infinity) return 1;
+            if (b.distanceMiles === Infinity) return -1;
+            return a.distanceMiles - b.distanceMiles;
+        });
+
+        resultsDiv.innerHTML = '<p class="cf-heading">Nearest Clinics</p>' + clinics.map(generateClinicCard).join('');
+    }
+
+    let lastTimeout = null;
+    inputEl.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(lastTimeout);
+        // Only run search if query is long enough (prevents showing all clinics on initial load)
+        if (query.length > 1) {
+            lastTimeout = setTimeout(() => handleSearch(query), 250);
+        } else {
+            // Clear results if the search box is empty
+            resultsDiv.innerHTML = '';
+            loadingEl.style.display = 'none';
+        }
+    });
+
+    // Add event listener for Enter key to search immediately
+    inputEl.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const query = this.value.trim();
+            clearTimeout(lastTimeout);
+            handleSearch(query);
+        }
+    });
+
+    // Function to handle the search logic
+    async function handleSearch(query) {
+        loadingEl.style.display = 'block';
+        resultsDiv.innerHTML = '';
+
+        // Normalize the user's query for comparison and API search
+        const normalizedQuery = query.trim().toUpperCase().replace(/\s+/g,'');
+
+        // Don't search if query is too short (unless it's something like "B2")
+        // This check is duplicated here just in case 'keypress' skips the 'input' check
+        if (!normalizedQuery || (normalizedQuery.length < 2 && normalizedQuery.length !== 1)) {
+            loadingEl.style.display = 'none';
+            return;
+        }
+
+        let userLoc = null;
+        // Determine the outward code part (first part of postcode, used for outcode geocoding)
+        const queryOutwardCode = query.trim().toUpperCase().split(' ')[0];
+
+
+        // 1. Geocode the user's location via API
+        try {
+            // Try full postcode search
+            let resp = await fetch(`${POSTCODES_API_BASE}/postcodes/${encodeURIComponent(normalizedQuery)}`);
+            if (resp.ok) {
+                const json = await resp.json();
+                if (json && json.result) userLoc = { lat: json.result.latitude, lon: json.result.longitude };
+            }
+
+            // If full postcode fails, try outcode search (using the queryOutwardCode)
+            if (!userLoc && queryOutwardCode.length > 1) {
+                const outResp = await fetch(`${POSTCODES_API_BASE}/outcodes/${encodeURIComponent(queryOutwardCode)}`);
+                if (outResp.ok) {
+                    const outJson = await outResp.json();
+                    // Use the average of the outcode
+                    if (outJson && outJson.result) userLoc = { lat: outJson.result.latitude, lon: outJson.result.longitude };
+                }
+            }
+        } catch(err) {
+            console.warn('Error geocoding user location', err);
+            // Continue if geocoding fails, fallback to name/address search
+        }
+
+
+        // 2. Process Clinics: Calculate distance if user location is known
+        let filteredClinics = clinicObjects.map(c => {
+            let distanceKm = Infinity;
+            let distanceMiles = Infinity;
+
+            // CRITICAL FIX: If the normalized postcodes are an exact match, set distance to 0 immediately.
+            if (c.normalizedPostcode === normalizedQuery) {
+                distanceMiles = 0;
+            } else if (userLoc && c.geocoded) {
+                // Otherwise, calculate distance using the coordinates obtained from the API
+                distanceKm = haversineKm(userLoc.lat, userLoc.lon, c.lat, c.lon);
+                distanceMiles = kmToMiles(distanceKm);
+            }
+
+            return {
+                ...c,
+                distanceMiles: distanceMiles
+            };
+        });
+
+        // 3. Apply final filtering
+        if (!userLoc) {
+             // If geocoding failed (i.e., query was a name, city, or invalid code), fall back to text search
+            const searchLower = query.toLowerCase();
+            filteredClinics = filteredClinics.filter(c =>
+                c.name.toLowerCase().includes(searchLower) ||
+                c.address.toLowerCase().includes(searchLower) ||
+                c.postcode.toLowerCase().includes(searchLower)
+            ).map(c => ({...c, distanceMiles: Infinity})); // Set distance back to Infinity for text-only matches
+        } else {
+            // If geocoding succeeded, filter out clinics with unknown coordinates (distanceMiles === Infinity)
+            filteredClinics = filteredClinics.filter(c => c.distanceMiles !== Infinity);
+        }
+
+        loadingEl.style.display = 'none';
+        renderResults(filteredClinics);
+    }
+</script>
+</body>
+</html>
